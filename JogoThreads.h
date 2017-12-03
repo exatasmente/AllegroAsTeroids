@@ -124,13 +124,13 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
                 if(lado){
                 jogo->listaAsteroids->addDesenho(jogo->listaAsteroids,
                                                 novoDesenho(jogo->carregaImage("asteroid.png"),
-                                                initCoordenada(64,54,0,rand()%jogo->altura,rand()%180),2,0)
+                                                initCoordenada(40,40,0,rand()%jogo->altura,rand()%180),2,0)
                                                 );
                     lado = 0;
                 }else{
                     jogo->listaAsteroids->addDesenho(jogo->listaAsteroids,
                                                 novoDesenho(jogo->carregaImage("asteroid.png"),
-                                                initCoordenada(64,54,rand()%jogo->largura,0,rand()%180),2,0)
+                                                initCoordenada(40,40,rand()%jogo->largura,0,rand()%180),2,0)
                                                 );
                     lado = 1;
                 }
@@ -145,39 +145,14 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
 }
 int verificaPosicao(Jogo *jogo,Coordenada *posicao){
     
-    if (posicao->dx >= jogo->largura || posicao->dx <= (jogo->largura*(-1))/2){
+    if (posicao->dx >= jogo->largura || posicao->dx <= jogo->largura*(-1)){
             return 0;
     }
-    if (posicao->dy >= jogo->altura || posicao->dy <= (jogo->altura*(-1))/2 ){
+    if (posicao->dy >= jogo->altura || posicao->dy <= jogo->altura*(-1) ){
         return 0;
     }
     return 1;
 
 
-
-}
-void detectacolisao(ALLEGRO_THREAD *thread,void *param){
-    Jogo *jogo = (Jogo*) param;
-    Desenho *tiro;
-    Desenho *asteroide;
-    al_rest(1);
-    
-    while(jogo->sair){
-       if(jogo->listaTiros->qt >0){
-         
-         
-            al_lock_mutex(jogo->listaTiros->mutex);        
-         
-            for(int i = 0 ; i < jogo->listaTiros->qt; i++){
-         
-                tiro = jogo->listaTiros->fila[i];
-              
-            }
-            al_unlock_mutex(jogo->listaTiros->mutex);        
-         
-        }
-        al_rest(0.09);
-    }
-    
 
 }
