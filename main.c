@@ -6,37 +6,34 @@ void desenhaTiros(Jogo *jogo);
 void desenhaInterface(Jogo *jogo);
 void desenhaAsteroides(Jogo *jogo);
 
+ALLEGRO_SAMPLE *explosaoSample;
 int main(){
     Jogo *jogo;
     Jogador *jogador;
-    mutex  = al_create_mutex();
-    cond = al_create_cond(); 
     jogo = novoJogo(800,600);
-    jogo->inicializa(jogo);
+    initJogo(jogo);
+    mutex  = al_create_mutex();
+    explosaoSample = al_load_sample("explosao.wav");
     ALLEGRO_BITMAP *sprites[2];
-    sprites[0] = jogo->carregaImage("sprite.png");
-    sprites[1] = jogo->carregaImage("sprite1.png");
+    sprites[0] = al_load_bitmap("sprite.png");
+    sprites[1] = al_load_bitmap("sprite1.png");
     jogador = initJogador(initCoordenada(24,24,320,240,0),3,0,sprites);
-    jogo->jogador = jogador;    
-    jogo->listaThreads->addThread(jogo->listaThreads,novoAlThread(teclado,jogo,10));
-    // jogo->listaThreads->addThread(jogo->listaThreads,novoAlThread(detectacolisao,jogo,11));
-    
-        while(jogo->sair){
-            
-            desenhaInterface(jogo);
-            
-            desenhaNave(jogo);
-            
-            desenhaTiros(jogo);
-            
-            desenhaAsteroides(jogo);
-            
-            if(jogo->jogador->vidas == 0){
-                break;
-            }   
+    jogo->jogador = jogador;
+    ALLEGRO_THREAD *threadTeclado = al_create_thread(&teclado,jogo);
+    al_start_thread(threadTeclado);
+   while(jogo->sair){
+        desenhaInterface(jogo);
+        desenhaNave(jogo);
+        desenhaTiros(jogo);
+        desenhaAsteroides(jogo);
+        if(jogo->jogador->vidas == 0){
+            jogo->sair = 0;
+        }   
         
-	    }
-    jogo->finaliza(jogo);
+    }
+    al_destroy_sample(explosaoSample);
+    al_destroy_thread(threadTeclado);
+    finaliza(jogo);
     return 0;
 }
 void desenhaInterface(Jogo *jogo){
@@ -44,18 +41,17 @@ void desenhaInterface(Jogo *jogo){
     buffer = al_create_bitmap(jogo->largura,jogo->altura);
     al_set_target_bitmap(buffer);
     al_draw_bitmap(al_get_backbuffer(jogo->janela), 0, 0, 0);                
-    al_draw_textf(jogo->fonte, al_map_rgb(255, 0, 0), 10, 10, ALLEGRO_ALIGN_LEFT,"PONTOS : %d", jogo->jogador->pontos);
-    al_draw_textf(jogo->fonte, al_map_rgb(255, 0, 0), jogo->largura-200, 10, ALLEGRO_ALIGN_LEFT," VIDAS:  %d", jogo->jogador->vidas);
-    jogo->atualiza();        
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), 10, 10, ALLEGRO_ALIGN_LEFT,"PONTOS : %d", jogo->jogador->pontos);
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), jogo->largura-200, 10, ALLEGRO_ALIGN_LEFT," VIDAS:  %d", jogo->jogador->vidas);
+    atualiza();        
     al_set_target_bitmap(al_get_backbuffer(jogo->janela));
             
     al_draw_bitmap(buffer,0,0,0);
     al_destroy_bitmap(buffer);    
 }
-
 void desenhaNave(Jogo *jogo){
     if(jogo->listaDesenho->qt > 0){        
-        int foi = 0;
+        int colisao = 0;
         ALLEGRO_BITMAP *buffer = NULL;
         buffer = al_create_bitmap(jogo->largura,jogo->altura);
         al_set_target_bitmap(buffer);
@@ -64,53 +60,48 @@ void desenhaNave(Jogo *jogo){
         Desenho *asteroide;
         Desenho *desenho;
         al_lock_mutex(jogo->listaDesenho->mutex);            
-        desenho = jogo->listaDesenho->removerDesenho(jogo->listaDesenho,0);
+        desenho = removerDesenho(jogo->listaDesenho,0);
         al_lock_mutex(jogo->listaAsteroids->mutex);
         for(int j = 0 ; j < jogo->listaAsteroids->qt; j++){
             asteroide = jogo->listaAsteroids->fila[j];
             float distancia = sqrt(pow(desenho->posicao->dx-asteroide->posicao->dx,2)+ pow(desenho->posicao->dy-asteroide->posicao->dy,2));
             if(distancia < desenho->posicao->x+desenho->posicao->y ){
-                jogo->jogador->pontos++;
-                foi = 1;
+                colisao = 1;
                 break;
             }
                    
         }
-        if(foi){
+        if(colisao){
             asteroide->id = -1;
         }
         al_unlock_mutex(jogo->listaAsteroids->mutex);
         al_unlock_mutex(jogo->listaDesenho->mutex);            
-        switch(desenho->tipo){
-            case 1:
-                break;                    
-            case 2:
-                if(!foi){
-                    if(verificaPosicao(jogo,desenho->posicao)){
-                        al_draw_rotated_bitmap(desenho->imagem,
-                                                   desenho->posicao->x,
-                                                   desenho->posicao->y,
-                                                   desenho->posicao->dx,
-                                                   desenho->posicao->dy,
-                                                   desenho->posicao->angulo*ALLEGRO_PI/180,
-                                                   desenho->flags);
+        if(!colisao){
+            if(verificaPosicao(jogo,desenho->posicao)){
+                al_draw_rotated_bitmap(desenho->imagem,
+                                       desenho->posicao->x,
+                                       desenho->posicao->y,
+                                       desenho->posicao->dx,
+                                       desenho->posicao->dy,
+                                       desenho->posicao->angulo*ALLEGRO_PI/180,
+                                       desenho->flags);
                 
                 
-                        al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+                al_set_target_bitmap(al_get_backbuffer(jogo->janela));
                         
-                        al_draw_bitmap(buffer,0,0,0);
-                        al_destroy_bitmap(buffer);
+                al_draw_bitmap(buffer,0,0,0);
+                al_destroy_bitmap(buffer);
                 
-                    }
-                }else{
-                    jogo->jogador->vidas -=1;
-                    al_draw_text(jogo->fonte, al_map_rgb(255, 0, 0), (jogo->largura/2)-150, jogo->altura/2, ALLEGRO_ALIGN_LEFT,"VOCE MORREU");
-                    al_set_target_bitmap(al_get_backbuffer(jogo->janela));
-                    al_draw_bitmap(buffer,0,0,0);
-                    jogo->atualiza();
-                    al_destroy_bitmap(buffer);
-                }
-                break;
+            }
+        }else{
+            jogo->jogador->vidas -=1;
+            al_draw_text(jogo->fonte, al_map_rgb(255, 0, 0), (jogo->largura/2)-150, jogo->altura/2, ALLEGRO_ALIGN_LEFT,"VOCE MORREU");
+            al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+            al_draw_bitmap(buffer,0,0,0);
+            atualiza();
+            al_destroy_bitmap(buffer);
+            
+            
         }
         asteroide = NULL;
         desenho = NULL;
@@ -118,7 +109,6 @@ void desenhaNave(Jogo *jogo){
     }            
 
 }
-
 void desenhaTiros(Jogo *jogo){
 
     if(jogo->listaTiros->qt > 0){
@@ -129,7 +119,7 @@ void desenhaTiros(Jogo *jogo){
                 
             Desenho *asteroide;
             Desenho *tiro;
-            int foi = 0;
+            int colisao = 0;
             for(int i = 0 ; i < jogo->listaTiros->qt ; i++){
                 tiro = jogo->listaTiros->fila[i];
                 tiro->posicao->dy +=  sin(tiro->posicao->angulo*ALLEGRO_PI/180 ) * 15;
@@ -145,32 +135,35 @@ void desenhaTiros(Jogo *jogo){
                       
                             if(distancia < tiro->posicao->x+tiro->posicao->y ){
                                 jogo->jogador->pontos++;
-                                foi = 1;
+                                colisao = 1;
                                 break;
                             }
                         }
                     
                     }
-                    if(foi){
+                    if(colisao){
+                        al_play_sample(explosaoSample, 1.0, 0.0, 1.8, ALLEGRO_PLAYMODE_ONCE, NULL);
                         asteroide->id = -2;
                         al_lock_mutex(jogo->listaTiros->mutex);
                         tiro->id = -1;
+                        
                         al_unlock_mutex(jogo->listaTiros->mutex);
-                    }
-                    al_unlock_mutex(jogo->listaAsteroids->mutex);
-                    if(!foi){
+                        colisao = 0;
+                    }else{
                         al_draw_rotated_bitmap(tiro->imagem,
-                                            tiro->posicao->x-24,
-                                            (tiro->posicao->y/2)-7,
+                                            tiro->posicao->x-6,
+                                            (tiro->posicao->y/2),
                                             tiro->posicao->dx,
                                             tiro->posicao->dy,
                                             tiro->posicao->angulo*ALLEGRO_PI/180,
                                             tiro->flags);
-                    
-                    }
+                        
+                    }   
+                    al_unlock_mutex(jogo->listaAsteroids->mutex);
                 }else{
                     al_lock_mutex(jogo->listaTiros->mutex);
                     tiro->id = -1;
+                    
                     al_unlock_mutex(jogo->listaTiros->mutex);
                 }
             }
@@ -207,25 +200,26 @@ void desenhaAsteroides(Jogo *jogo){
                                             asteroide->posicao->dy,
                                             asteroide->posicao->angulo*ALLEGRO_PI/180,
                                             asteroide->flags);
-                    
+                   
                         
                 
-                    }else if(asteroide->id == -2){
-                        if(asteroide->posExplosao < 12){
-                            al_draw_bitmap(asteroide->explosao[asteroide->posExplosao++],
-                                            asteroide->posicao->dx,
-                                            asteroide->posicao->dy,
-                                            asteroide->flags);
-                            
-                                
-                        }else{
-                            asteroide->id = -1;
-                        }
+                }else if(asteroide->id == -2){
+                    if(asteroide->posExplosao < 12){
+                        ALLEGRO_BITMAP *explosao = al_load_bitmap(d[asteroide->posExplosao]);
                     
-                    
+    
+                        al_draw_bitmap(explosao,
+                                        asteroide->posicao->dx,
+                                        asteroide->posicao->dy,
+                                        asteroide->flags);
+                        asteroide->posExplosao++;
+                        al_destroy_bitmap(explosao);
                     }else{
                         asteroide->id = -1;
                     }
+                }else{
+                    asteroide->id = -1;
+                }
                 
             }
             al_unlock_mutex(jogo->listaAsteroids->mutex);
@@ -234,7 +228,7 @@ void desenhaAsteroides(Jogo *jogo){
             al_draw_bitmap(buffer,0,0,0);
             al_destroy_bitmap(buffer);
             asteroide = NULL;
-            jogo->listaAsteroids->removerDesativados(jogo->listaAsteroids);
+            removerDesativados(jogo->listaAsteroids);
             
     }            
 }

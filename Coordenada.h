@@ -5,8 +5,6 @@ typedef struct coordenada{
     double dy;
     int angulo;
 }Coordenada;
-
-
 Coordenada *initCoordenada(double x, double y , double dx , double dy,double angulo){
     Coordenada *novo;
     novo = (Coordenada*) malloc(sizeof(Coordenada));

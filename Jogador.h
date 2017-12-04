@@ -1,4 +1,3 @@
-
 typedef struct jogador{
     Coordenada *posicao;
     int vidas;
@@ -6,7 +5,6 @@ typedef struct jogador{
     ALLEGRO_BITMAP *sprite[2];
     
 }Jogador;
-
 
 Jogador *initJogador(Coordenada *posicao, int vidas,int pontos,ALLEGRO_BITMAP *sprite[2]){
     Jogador *novo;
