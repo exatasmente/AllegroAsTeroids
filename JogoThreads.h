@@ -244,12 +244,9 @@ void controleAddRankig(Jogo *jogo){
     al_set_target_bitmap(buffer);
     al_draw_bitmap(jogo->fundo, 0, 0, 0);                
     al_draw_bitmap(jogo->fundo, 0, 0, 0);                
-            al_draw_textf(jogo->fonte, escolha0,(jogo->largura/2)-50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
-            "%c",valores[campos[0]]);
-            al_draw_textf(jogo->fonte, escolha1,(jogo->largura/2), (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
-            "%c",valores[campos[1]]);
-            al_draw_textf(jogo->fonte, escolha1,(jogo->largura/2)+50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
-            "%c",valores[campos[2]]);
+    al_draw_textf(jogo->fonte, escolha0,(jogo->largura/2)-50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"%c",valores[campos[0]]);
+    al_draw_textf(jogo->fonte, escolha1,(jogo->largura/2), (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"%c",valores[campos[1]]);
+    al_draw_textf(jogo->fonte, escolha1,(jogo->largura/2)+50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"%c",valores[campos[2]]);
     al_set_target_bitmap(al_get_backbuffer(jogo->janela));
     al_draw_bitmap(buffer,0,0,0);
     al_destroy_bitmap(buffer);
@@ -286,12 +283,9 @@ void controleAddRankig(Jogo *jogo){
 
             }
             al_draw_bitmap(jogo->fundo, 0, 0, 0);                
-            al_draw_textf(jogo->fonte, (opcao2 == 0 ? escolha0 : escolha1),(jogo->largura/2)-50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
-            "%c",valores[campos[0]]);
-            al_draw_textf(jogo->fonte,(opcao2 == 1 ? escolha0 : escolha1),(jogo->largura/2), (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
-            "%c",valores[campos[1]]);
-            al_draw_textf(jogo->fonte,(opcao2 == 2 ? escolha0 : escolha1),(jogo->largura/2)+50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
-            "%c",valores[campos[2]]);
+            al_draw_textf(jogo->fonte, (opcao2 == 0 ? escolha0 : escolha1),(jogo->largura/2)-50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"%c",valores[campos[0]]);
+            al_draw_textf(jogo->fonte,(opcao2 == 1 ? escolha0 : escolha1),(jogo->largura/2), (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"%c",valores[campos[1]]);
+            al_draw_textf(jogo->fonte,(opcao2 == 2 ? escolha0 : escolha1),(jogo->largura/2)+50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"%c",valores[campos[2]]);
             
                     
 

@@ -270,7 +270,7 @@ void desenhaAsteroides(Jogo *jogo){
 void exibeRanking(Jogo *jogo){
     ALLEGRO_BITMAP *buffer = NULL;
     FILE *arquivo;
-    Ranking *vetor[5];
+    Ranking *vetor[50];
     buffer = al_create_bitmap(jogo->largura,jogo->altura);
     al_set_target_bitmap(buffer);
     al_draw_bitmap(jogo->fundo, 0, 0, 0);                
@@ -306,7 +306,7 @@ void exibeRanking(Jogo *jogo){
 
     int auxY = 140;
     al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80, 100, ALLEGRO_ALIGN_LEFT,"JRD : %d",INT_MAX);
-    for(int i = 0 ; i < qt ; i++){
+    for(int i = 0 ; i < (qt > 6 ? 6 : qt) ; i++){
         al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80,auxY, ALLEGRO_ALIGN_LEFT,"%s : %d",vetor[i]->nome,vetor[i]->pontos);
         auxY += 40;
     }
