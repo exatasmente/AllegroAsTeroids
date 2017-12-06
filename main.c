@@ -1,6 +1,7 @@
 #include "includes.h"
 
 
+
 void desenhaNave(Jogo *jogo);
 void desenhaTiros(Jogo *jogo);
 void desenhaInterface(Jogo *jogo);
@@ -10,6 +11,8 @@ ALLEGRO_SAMPLE *explosaoSample;
 int main(){
     Jogo *jogo;
     Jogador *jogador;
+    menu = true;
+    menosVida = false;
     jogo = novoJogo(800,600);
     initJogo(jogo);
     mutex  = al_create_mutex();
@@ -21,15 +24,32 @@ int main(){
     jogo->jogador = jogador;
     ALLEGRO_THREAD *threadTeclado = al_create_thread(&teclado,jogo);
     al_start_thread(threadTeclado);
-   while(jogo->sair){
-        desenhaInterface(jogo);
-        desenhaNave(jogo);
-        desenhaTiros(jogo);
-        desenhaAsteroides(jogo);
-        if(jogo->jogador->vidas == 0){
-            jogo->sair = 0;
-        }   
-        
+    controleMenu(jogo);
+    if(opcao){
+        exibeRanking(jogo);
+        al_rest(3);
+    }
+    while(jogo->sair){
+        if(!menu){
+            desenhaInterface(jogo);
+            desenhaNave(jogo);
+            desenhaTiros(jogo);
+            desenhaAsteroides(jogo);
+            if(jogo->jogador->vidas == 0){
+                jogo->sair = 0;
+            }   
+        }if(menosVida){
+                while(true){
+                    ALLEGRO_EVENT evento;
+                    al_wait_for_event(jogo->filaEventos, &evento);
+                    if(evento.type == ALLEGRO_EVENT_KEY_DOWN){
+                        if(evento.keyboard.keycode == ALLEGRO_KEY_SPACE){
+                            menosVida = false;
+                            break;
+                        }
+                    }
+                }
+            }
     }
     al_destroy_sample(explosaoSample);
     al_destroy_thread(threadTeclado);
@@ -67,6 +87,7 @@ void desenhaNave(Jogo *jogo){
             float distancia = sqrt(pow(desenho->posicao->dx-asteroide->posicao->dx,2)+ pow(desenho->posicao->dy-asteroide->posicao->dy,2));
             if(distancia < desenho->posicao->x+desenho->posicao->y ){
                 colisao = 1;
+                menosVida = true;
                 break;
             }
                    
@@ -233,3 +254,22 @@ void desenhaAsteroides(Jogo *jogo){
     }            
 }
 
+void desenhaMenu(Jogo *jogo){
+    ALLEGRO_BITMAP *buffer = NULL;
+    buffer = al_create_bitmap(jogo->largura,jogo->altura);
+    al_set_target_bitmap(buffer);
+    al_draw_bitmap(al_get_backbuffer(jogo->janela), 0, 0, 0);                
+    
+    al_destroy_bitmap(buffer);    
+}
+
+void exibeRanking(Jogo *jogo){
+    ALLEGRO_BITMAP *buffer = NULL;
+    buffer = al_create_bitmap(jogo->largura,jogo->altura);
+    al_set_target_bitmap(buffer);
+    al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 0, 0), jogo->largura/2, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"NOVO JOGO");
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), jogo->largura/2, (jogo->altura/2)+40, ALLEGRO_ALIGN_LEFT,"RANKING"); 
+    al_destroy_bitmap(buffer);   
+    atualiza(); 
+}
