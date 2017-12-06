@@ -5,6 +5,7 @@
 #include <time.h>
 bool menu;
 int opcao;
+int opcao2;
 int desenha;
 int teclas[5] = {0,0,0,0,0};
 enum TECLAS {
@@ -226,4 +227,84 @@ void controleMenu(Jogo *jogo){
         }
      
     }
+}
+void controleAddRankig(Jogo *jogo){
+    ALLEGRO_BITMAP *buffer = NULL;
+    ALLEGRO_COLOR escolha1 =  al_map_rgb(255, 0, 0);
+    ALLEGRO_COLOR escolha0 =  al_map_rgb(255, 255, 255);
+    char valores[36] ={'A','B','C','D','E','F','G','H','I','J','K',
+                        'L','M','N','O','P','Q','R','S','T','U','V',
+                        'W','Y','X','Z','0','1','2','3','4','5','6','7','8','9'};
+    
+    int campos[3] = {0,0,0};
+    menu = true;
+    buffer = al_create_bitmap(jogo->largura,jogo->altura);
+    al_set_target_bitmap(buffer);
+    al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+    al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+            al_draw_textf(jogo->fonte, escolha0,(jogo->largura/2)-50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
+            "%c",valores[campos[0]]);
+            al_draw_textf(jogo->fonte, escolha1,(jogo->largura/2), (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
+            "%c",valores[campos[1]]);
+            al_draw_textf(jogo->fonte, escolha1,(jogo->largura/2)+50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
+            "%c",valores[campos[2]]);
+    al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+    al_draw_bitmap(buffer,0,0,0);
+    al_destroy_bitmap(buffer);
+    atualiza();
+    opcao = 0;
+    while(menu){
+        ALLEGRO_EVENT evento;
+        al_wait_for_event(jogo->filaEventos, &evento);
+        if(evento.type == ALLEGRO_EVENT_KEY_DOWN){
+            buffer = NULL;
+            buffer = al_create_bitmap(jogo->largura,jogo->altura);
+            al_set_target_bitmap(buffer);
+            
+            switch(evento.keyboard.keycode) {
+                case ALLEGRO_KEY_UP:
+                    opcao = (opcao+1)%36;                
+                    campos[opcao2] = opcao;  
+                    break;
+                case ALLEGRO_KEY_DOWN:
+                    opcao = (opcao-1)%36;                
+                    campos[opcao2] = opcao;  
+                    break;
+                case ALLEGRO_KEY_LEFT:
+                    opcao2 = (opcao2-1)%3;                
+                    break;
+                case ALLEGRO_KEY_RIGHT:
+                    opcao2 = (opcao2+1)%3;
+                    break;
+                case ALLEGRO_KEY_SPACE:
+                    menu = false;
+                    break;
+                default:
+                    al_draw_bitmap(al_get_backbuffer(jogo->janela), 0, 0, 0);
+
+            }
+            al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+            al_draw_textf(jogo->fonte, (opcao2 == 0 ? escolha0 : escolha1),(jogo->largura/2)-50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
+            "%c",valores[campos[0]]);
+            al_draw_textf(jogo->fonte,(opcao2 == 1 ? escolha0 : escolha1),(jogo->largura/2), (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
+            "%c",valores[campos[1]]);
+            al_draw_textf(jogo->fonte,(opcao2 == 2 ? escolha0 : escolha1),(jogo->largura/2)+50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,
+            "%c",valores[campos[2]]);
+            
+                    
+
+            al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+            al_draw_bitmap(buffer,0,0,0);
+            al_destroy_bitmap(buffer);
+            atualiza();
+        }else if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
+            jogo->sair = 0;
+            menu = false;
+        }
+     
+    }
+    FILE *arq = fopen("ranking.rk","ab");
+    fprintf(arq,"%c%c%c: %d\n",valores[campos[0]],valores[campos[1]],valores[campos[2]],jogo->jogador->pontos);
+    fclose(arq);
+    exibeRanking(jogo);
 }

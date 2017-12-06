@@ -1,5 +1,11 @@
 #include "includes.h"
 
+typedef struct ranking{
+    char *nome[3];
+    int pontos;
+}Ranking;
+
+
 void desenhaNave(Jogo *jogo);
 void desenhaTiros(Jogo *jogo);
 void desenhaInterface(Jogo *jogo);
@@ -20,6 +26,7 @@ int main(){
     jogador = initJogador(initCoordenada(24,24,320,240,0),3,0,sprites);
     jogo->jogador = jogador;
     ALLEGRO_THREAD *threadTeclado = al_create_thread(&teclado,jogo);
+
     while(menu){
         controleMenu(jogo);
         switch(opcao){
@@ -46,6 +53,7 @@ int main(){
             desenhaTiros(jogo);
             desenhaAsteroides(jogo);
             if(jogo->jogador->vidas == 0){
+                controleAddRankig(jogo);
                 jogo->sair = 0;
             }   
         }
@@ -260,10 +268,48 @@ void desenhaAsteroides(Jogo *jogo){
 
 void exibeRanking(Jogo *jogo){
     ALLEGRO_BITMAP *buffer = NULL;
+    FILE *arquivo;
+    Ranking *vetor[5];
     buffer = al_create_bitmap(jogo->largura,jogo->altura);
     al_set_target_bitmap(buffer);
     al_draw_bitmap(jogo->fundo, 0, 0, 0);                
-    al_draw_textf(jogo->fonte, al_map_rgb(255, 0, 0), (jogo->largura/2)-80, 10, ALLEGRO_ALIGN_LEFT,"JRD : Inf");
+    arquivo = fopen("ranking.rk","rb");
+    int ch;
+    int qt = 0;
+    while((ch = getc(arquivo)) != EOF){
+        if(ch =='\n'){
+            qt++;
+        }
+    }
+    qt++;
+    rewind(arquivo);
+    for(int i = 0 ; i < qt ; i++){
+        vetor[i] = (Ranking*) malloc(sizeof(Ranking));
+        fscanf(arquivo,"%s\t%d\n",vetor[i]->nome,&vetor[i]->pontos);
+    }
+    fclose(arquivo);
+
+    for(int i = 0 ; i < qt ; i++){
+        for(int j = i ; j < qt ; j++){
+            if(vetor[i]->pontos < vetor[j]->pontos){
+                Ranking *aux = (Ranking*)malloc(sizeof(Ranking));
+                for(int s = 0 ; s < 3 ; s++)
+                    aux->nome[s] = vetor[i]->nome[s];
+
+                aux->pontos = vetor[i]->pontos;
+                vetor[i] = vetor[j];
+                vetor[j] = aux;
+            }
+        }
+    }
+
+    int auxY = 140;
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80, 100, ALLEGRO_ALIGN_LEFT,"JRD : %d",INT_MAX);
+    for(int i = 0 ; i < qt ; i++){
+        al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80,auxY, ALLEGRO_ALIGN_LEFT,"%s : %d",vetor[i]->nome,vetor[i]->pontos);
+        auxY += 40;
+    }
+
     al_set_target_bitmap(al_get_backbuffer(jogo->janela));
     al_draw_bitmap(buffer,0,0,0);
     al_destroy_bitmap(buffer);   
@@ -280,3 +326,6 @@ void exibeRanking(Jogo *jogo){
     menu = true;
 
 }
+
+
+ 
