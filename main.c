@@ -4,27 +4,36 @@ typedef struct ranking{
     char *nome[3];
     int pontos;
 }Ranking;
-
+ALLEGRO_SAMPLE *explosaoSample;
 
 void desenhaNave(Jogo *jogo);
 void desenhaTiros(Jogo *jogo);
 void desenhaInterface(Jogo *jogo);
 void desenhaAsteroides(Jogo *jogo);
+void exibeRanking(Jogo *jogo);
 
-ALLEGRO_SAMPLE *explosaoSample;
+
 int main(){
     Jogo *jogo;
     Jogador *jogador;
-    menu = true;
     jogo = novoJogo(800,600);
     initJogo(jogo);
+    velocidadeAsteroid = 4;
+  
+
+    menu = true;
+
     mutex  = al_create_mutex();
     explosaoSample = al_load_sample("explosao.wav");
     ALLEGRO_BITMAP *sprites[2];
     sprites[0] = al_load_bitmap("sprite.png");
     sprites[1] = al_load_bitmap("sprite1.png");
+
+
     jogador = initJogador(initCoordenada(24,24,320,240,0),3,0,sprites);
+
     jogo->jogador = jogador;
+
     ALLEGRO_THREAD *threadTeclado = al_create_thread(&teclado,jogo);
 
     while(menu){
@@ -220,8 +229,8 @@ void desenhaAsteroides(Jogo *jogo){
             for(int i = 0 ; i < jogo->listaAsteroids->qt ; i++){
                 asteroide = jogo->listaAsteroids->fila[i];
                 if(asteroide->id >= 0){
-                    asteroide->posicao->dy +=  sin(asteroide->posicao->angulo*ALLEGRO_PI/180 ) * 4;
-                    asteroide->posicao->dx +=  cos(asteroide->posicao->angulo*ALLEGRO_PI/180 ) * 4;
+                    asteroide->posicao->dy +=  sin(asteroide->posicao->angulo*ALLEGRO_PI/180 ) * velocidadeAsteroid;
+                    asteroide->posicao->dx +=  cos(asteroide->posicao->angulo*ALLEGRO_PI/180 ) * velocidadeAsteroid;
                 }    
                 if(verificaPosicao(jogo,asteroide->posicao) && asteroide->id >= 0){
                     al_draw_rotated_bitmap(asteroide->imagem,

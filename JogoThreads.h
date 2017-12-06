@@ -7,6 +7,7 @@ bool menu;
 int opcao;
 int opcao2;
 int desenha;
+int velocidadeAsteroid;
 int teclas[5] = {0,0,0,0,0};
 enum TECLAS {
    KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE
@@ -16,6 +17,7 @@ void * teclado(ALLEGRO_THREAD *thread,void *param);
 void atualizaPosicao(Coordenada *posicao);
 void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *posicao);
 void controleMenu(Jogo *jogo);
+void controleAddRankig(Jogo *jogo);
 
 void atualizaPosicao(Coordenada *posicao){
     if(teclas[KEY_UP]){
@@ -44,9 +46,11 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
     Jogador *jogador = jogo->jogador;
     int lado = 0;
     srand(time(NULL));
-
+    
     time_t tinicio, tfim;
+    time_t dificuldade;
     time(&tinicio);
+    time(&dificuldade);
     ALLEGRO_SAMPLE *sample = al_load_sample("tiro.wav");
     while(jogo->sair){
         
@@ -122,10 +126,15 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
                 atualizaDesenhos(jogo->listaDesenho,jogador->sprite[1],jogador->posicao);
             }
             al_unlock_mutex(jogo->listaDesenho->mutex);
-
+            
             time(&tfim);
             double diff = difftime(tfim,tinicio);
-            
+            double velocidade = difftime(tfim,dificuldade);
+            if(velocidade > 15.0 ){
+                
+                velocidadeAsteroid++;
+                time(&dificuldade);
+            }
             if(diff > 0.005){
                 ALLEGRO_BITMAP *sprite = al_load_bitmap("asteroid.png");
                 Coordenada *posicao;
