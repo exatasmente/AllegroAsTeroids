@@ -33,9 +33,11 @@ void atualizaPosicao(Coordenada *posicao){
     desenha = 1;
 }
 void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *posicao){
+
     Desenho *desenho = novoDesenho(sprite,posicao,0);
     addDesenho(lista,desenho);
     desenho = NULL;
+    
 }
 void * teclado(ALLEGRO_THREAD *thread,void *param){
     Jogo *jogo = (Jogo*) param;
@@ -154,7 +156,7 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
                 
                 time(&tinicio);
             }
-            atualiza();    
+            
             al_rest(0.05);
         }
 

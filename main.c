@@ -56,6 +56,7 @@ int main(){
                 controleAddRankig(jogo);
                 jogo->sair = 0;
             }   
+            
         }
     }
     al_destroy_sample(explosaoSample);
@@ -70,11 +71,11 @@ void desenhaInterface(Jogo *jogo){
     al_draw_bitmap(al_get_backbuffer(jogo->janela), 0, 0, 0);                
     al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), 10, 10, ALLEGRO_ALIGN_LEFT,"PONTOS : %d", jogo->jogador->pontos);
     al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), jogo->largura-200, 10, ALLEGRO_ALIGN_LEFT," VIDAS:  %d", jogo->jogador->vidas);
-    atualiza();        
+    atualiza();
     al_set_target_bitmap(al_get_backbuffer(jogo->janela));
-            
     al_draw_bitmap(buffer,0,0,0);
     al_destroy_bitmap(buffer);    
+    
 }
 void desenhaNave(Jogo *jogo){
     if(jogo->listaDesenho->qt > 0){        
@@ -130,7 +131,7 @@ void desenhaNave(Jogo *jogo){
         }
         asteroide = NULL;
         desenho = NULL;
-    
+        
     }            
 
 }
