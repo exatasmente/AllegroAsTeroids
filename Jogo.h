@@ -2,7 +2,6 @@
 
 ALLEGRO_MUTEX *mutex;
 
-
 typedef struct jogo{
     ALLEGRO_BITMAP* fundo;
     ALLEGRO_DISPLAY *janela;
@@ -47,13 +46,14 @@ void initJogo(Jogo *novo){
     novo->listaAsteroids = initListaDesenho(50);
     novo->janela = al_create_display(novo->largura,novo->altura);
     novo->filaEventos = al_create_event_queue();
-    novo->fonte = al_load_font("ARCADE_R.TTF", 20, 0);
+    novo->fonte = al_load_font("ARCADE_I.TTF", 20, 0);
 
     al_register_event_source(novo->filaEventos, al_get_keyboard_event_source());
     al_register_event_source(novo->filaEventos, al_get_display_event_source(novo->janela));
     al_register_event_source(novo->filaEventos, al_get_timer_event_source(novo->timer));
 
-    al_set_window_title(novo->janela, "Asteroids Tzil");
+    al_set_window_title(novo->janela, "Asteroids");
+    
     novo->fundo = al_load_bitmap("bg.jpeg");
     al_draw_bitmap(novo->fundo, 0, 0, 0);
     al_flip_display();

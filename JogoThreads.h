@@ -6,7 +6,6 @@
 bool menu;
 int opcao;
 int desenha;
-bool menosVida;
 int teclas[5] = {0,0,0,0,0};
 enum TECLAS {
    KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE
@@ -15,6 +14,7 @@ enum TECLAS {
 void * teclado(ALLEGRO_THREAD *thread,void *param);
 void atualizaPosicao(Coordenada *posicao);
 void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *posicao);
+void controleMenu(Jogo *jogo);
 
 void atualizaPosicao(Coordenada *posicao){
     if(teclas[KEY_UP]){
@@ -31,7 +31,6 @@ void atualizaPosicao(Coordenada *posicao){
     }      
     desenha = 1;
 }
-
 void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *posicao){
     Desenho *desenho = novoDesenho(sprite,posicao,0);
     addDesenho(lista,desenho);
@@ -42,14 +41,10 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
     Jogador *jogador = jogo->jogador;
     int lado = 0;
     srand(time(NULL));
-    
+
     time_t tinicio, tfim;
     time(&tinicio);
     ALLEGRO_SAMPLE *sample = al_load_sample("tiro.wav");
-    al_rest(1);
-    while(menu){
-        
-    }
     while(jogo->sair){
         
         ALLEGRO_EVENT evento;
@@ -105,7 +100,7 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
             if(teclas[KEY_SPACE]){
                 ALLEGRO_BITMAP *sprite = al_load_bitmap("tiro.png");                
                 Coordenada *posicao = initCoordenada(6,12,jogador->posicao->dx,jogador->posicao->dy,jogador->posicao->angulo);
-                
+
                 al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
               
                 al_lock_mutex(jogo->listaTiros->mutex);
@@ -136,22 +131,22 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
                     case 0:
                         posicao = initCoordenada(40,40,0,rand()%jogo->altura,rand()%90);
                         atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
-                        lado = rand()%3;
+                        lado = rand()%4;
                         break;
                     case 1:
                         posicao = initCoordenada(40,40,rand()%jogo->largura,0,rand()%180);
                         atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
-                        lado = rand()%3;
+                        lado = rand()%4;
                         break;
                     case 2:
                         posicao = initCoordenada(40,40,rand()%jogo->largura,jogo->altura,rand()%90);
                         atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
-                        lado = rand()%3;
+                        lado = rand()%4;
                         break;
                     case 3:
                         posicao = initCoordenada(40,40,jogo->largura,rand()%jogo->altura,rand()%180);
                         atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
-                        lado = rand()%3;
+                        lado = rand()%4;
                         break;
                 }
                 al_unlock_mutex(jogo->listaAsteroids->mutex);
@@ -164,7 +159,7 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
 
      
     }
-      al_destroy_sample(sample);
+    al_destroy_sample(sample);
     
 }
 int verificaPosicao(Jogo *jogo,Coordenada *posicao){
@@ -178,39 +173,49 @@ int verificaPosicao(Jogo *jogo,Coordenada *posicao){
 }
 
 void controleMenu(Jogo *jogo){
+    ALLEGRO_BITMAP *buffer = NULL;
+    ALLEGRO_COLOR escolha1 =  al_map_rgb(255, 0, 0);
+    ALLEGRO_COLOR escolha0 =  al_map_rgb(255, 255, 255);
 
-    
+    buffer = al_create_bitmap(jogo->largura,jogo->altura);
+    al_set_target_bitmap(buffer);
+    al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 0, 0), (jogo->largura/2)-80, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"NOVO JOGO");
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80, (jogo->altura/2)+40, ALLEGRO_ALIGN_LEFT,"RANKING"); 
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80, (jogo->altura/2)+80, ALLEGRO_ALIGN_LEFT,"SAIR"); 
+    al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+    al_draw_bitmap(buffer,0,0,0);
+    al_destroy_bitmap(buffer);
+    atualiza();
+
     while(menu){
         ALLEGRO_EVENT evento;
         al_wait_for_event(jogo->filaEventos, &evento);
         if(evento.type == ALLEGRO_EVENT_KEY_DOWN){
-            ALLEGRO_BITMAP *buffer = NULL;
+            buffer = NULL;
             buffer = al_create_bitmap(jogo->largura,jogo->altura);
             al_set_target_bitmap(buffer);
             
             switch(evento.keyboard.keycode) {
                 case ALLEGRO_KEY_UP:
-                    al_draw_bitmap(jogo->fundo, 0, 0, 0);                
-                    al_draw_textf(jogo->fonte, al_map_rgb(255, 0, 0), jogo->largura/2, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"NOVO JOGO");
-                    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), jogo->largura/2, (jogo->altura/2)+40, ALLEGRO_ALIGN_LEFT,"RANKING"); 
-                   if(opcao)
-                       opcao = 0;
-                
+                    opcao = (opcao-1)%3;                
                     break;
                 case ALLEGRO_KEY_DOWN:
-                    if(!opcao)
-                        opcao = 1;
-                    al_draw_bitmap(jogo->fundo, 0, 0, 0);                
-                    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), jogo->largura/2, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"NOVO JOGO");
-                    al_draw_textf(jogo->fonte, al_map_rgb(255, 0, 0), jogo->largura/2, (jogo->altura/2)+40, ALLEGRO_ALIGN_LEFT,"RANKING"); 
-            
+                    opcao = (opcao+1)%3;
                     break;
                 case ALLEGRO_KEY_SPACE:
                     menu = false;
                     break;
                 default:
-                    al_draw_bitmap(al_get_backbuffer(jogo->janela), 0, 0, 0);                
+                    al_draw_bitmap(al_get_backbuffer(jogo->janela), 0, 0, 0);
+
             }
+            al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+            al_draw_textf(jogo->fonte, (opcao == 0 ? escolha1 : escolha0 ),(jogo->largura/2)-80, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"NOVO JOGO");
+            al_draw_textf(jogo->fonte, (opcao == 1 ? escolha1 : escolha0 ),(jogo->largura/2)-80, (jogo->altura/2)+40, ALLEGRO_ALIGN_LEFT,"RANKING"); 
+            al_draw_textf(jogo->fonte, (opcao == 2 ? escolha1 : escolha0 ), (jogo->largura/2)-80, (jogo->altura/2)+80, ALLEGRO_ALIGN_LEFT,"SAIR"); 
+                    
+
             al_set_target_bitmap(al_get_backbuffer(jogo->janela));
             al_draw_bitmap(buffer,0,0,0);
             al_destroy_bitmap(buffer);
