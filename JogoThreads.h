@@ -1,18 +1,26 @@
+//importação dos modelos
 #include "Coordenada.h"
 #include "Jogador.h"
+//importação do controlador modelo-Interface Grafica 
 #include "Jogo.h"
+
+//importação das bibliotecas auxiliares
 #include <math.h>
 #include <time.h>
+
+enum TECLAS {
+   KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE
+};
+
+// variavéis de controle
 bool menu;
 int opcao;
 int opcao2;
 int desenha;
 int velocidadeAsteroid;
 int teclas[5] = {0,0,0,0,0};
-enum TECLAS {
-   KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE
-};
 
+// assinatura dos procedimentos
 void * teclado(ALLEGRO_THREAD *thread,void *param);
 void atualizaPosicao(Coordenada *posicao);
 void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *posicao);
@@ -20,6 +28,10 @@ void controleMenu(Jogo *jogo);
 void controleAddRankig(Jogo *jogo);
 
 void atualizaPosicao(Coordenada *posicao){
+    /*
+        Tem o dever de atualizar a coordenada atual do jogador baseado nas teclas pressionadas
+
+    */
     if(teclas[KEY_UP]){
         posicao->dy +=  sin(posicao->angulo*ALLEGRO_PI/180 ) * 5;
         posicao->dx +=  cos(posicao->angulo*ALLEGRO_PI/180 ) * 5;
@@ -35,42 +47,66 @@ void atualizaPosicao(Coordenada *posicao){
     desenha = 1;
 }
 void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *posicao){
-
+    /*
+    Responsavél por inserir um desenho em uma das listas de desenhos utilizadas pelo programa
+    */
     Desenho *desenho = novoDesenho(sprite,posicao,0);
     addDesenho(lista,desenho);
     desenho = NULL;
     
 }
 void * teclado(ALLEGRO_THREAD *thread,void *param){
+    /*
+    Procedimento de controle localizado entre a borda e os modelos 
+
+    Procedimento chamado para ser rodado em uma thread
+    Responsavél por escutar os eventos do teclado e do timer
+    Assim controlando o que deve ser desenhado na tela
+
+
+
+    */
+    // variavéis auxiliares 
     Jogo *jogo = (Jogo*) param;
     Jogador *jogador = jogo->jogador;
     int lado = 0;
+    //inicializa o rand
     srand(time(NULL));
-    
+    //variavéis de verificação de intervalo de tempo
     time_t tinicio, tfim;
     time_t dificuldade;
+    //armazena o tempo atual da máquina nas duas variavéis abaixo
     time(&tinicio);
     time(&dificuldade);
+    // instância e inicaializa a variavél "sample" com o som a ser reproduzido no disparo
     ALLEGRO_SAMPLE *sample = al_load_sample("tiro.wav");
+
     while(jogo->sair){
-        
+        //instância uma variavél do tipo ALLEGRO_EVENT    
         ALLEGRO_EVENT evento;
+        //aguarda um evendo vindo do teclado ou de tempo e armazena tal evento na variavél declarada acima
         al_wait_for_event(jogo->filaEventos, &evento);
-        
+        //caso o evento seja do tipo timer
         if(evento.type == ALLEGRO_EVENT_TIMER){
+            //a posição do jogador deve ser atualizada
             atualizaPosicao(jogador->posicao);
-            
+        // caso contrário se o evento seja to tipo tecla pressionada (ALLEGRO_EVENT_KEY_DOWN)
         }else if(evento.type == ALLEGRO_EVENT_KEY_DOWN){
+            //switch para saber qual tecla foi pressionada
             switch(evento.keyboard.keycode) {
+                //caso seja seta para cima
                 case ALLEGRO_KEY_UP:
-                    teclas[KEY_UP] = 1;
+                    teclas[KEY_UP] = 1; 
                     break;
+                //caso seja seta para baixo
                 case ALLEGRO_KEY_DOWN:
                     teclas[KEY_DOWN] = 1;
                     break;
+                //caso seja seta para esquerda
                 case ALLEGRO_KEY_LEFT: 
                     teclas[KEY_LEFT] = 1;
                     break;
+                //caso seja seta para direita
                 case ALLEGRO_KEY_RIGHT:
                     teclas[KEY_RIGHT] = 1;
                     break;
@@ -78,7 +114,9 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
                     teclas[KEY_SPACE] = 1;    
                     break;
             }
+            // define q não precisa ser desenhado na tela
             desenha = 0;
+        //caso contrário se seja um evento de tecla solta
         }else if(evento.type == ALLEGRO_EVENT_KEY_UP){
             switch(evento.keyboard.keycode) {
                case ALLEGRO_KEY_UP:
@@ -97,48 +135,66 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
                     teclas[KEY_SPACE] = 0;    
                     break;
             }
+        // caso contrário se for um evento do tipo para fechar a janela
         }else if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
+            //define q o jogo deve ser fechado
             jogo->sair = 0;
             
         }
+        // caso seja preciso desenha e a fila de eventos eteja vazia
         if(desenha && al_is_event_queue_empty(jogo->filaEventos)){
-            
+            //define q não precisa ser desenhado pois já está dentro do bloco responsavél por isso
             desenha = 0;
+            //caso a tecla espaço tenha sido pressionada
             if(teclas[KEY_SPACE]){
+                //carrega o sprite do tiro
                 ALLEGRO_BITMAP *sprite = al_load_bitmap("tiro.png");                
+                //inicializa uma coordenada baseada na posição atual da nave na tela
                 Coordenada *posicao = initCoordenada(6,12,jogador->posicao->dx,jogador->posicao->dy,jogador->posicao->angulo);
-
+                // repoduz o som de tiro
                 al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-              
+                // bloqueia os endereços de memória abaixo
                 al_lock_mutex(jogo->listaTiros->mutex);
+                //chamada do procedimento para adicionar na lista de tiros o tiro instânciado acima
                 atualizaDesenhos(jogo->listaTiros,sprite,posicao);
-
+                //desbloquiea os endereços de memória acima
                 al_unlock_mutex(jogo->listaTiros->mutex);
+
                 sprite = NULL;
                 
              
             }
-
+            //bloqueia os endereços de memória abaixo
             al_lock_mutex(jogo->listaDesenho->mutex);
+            //caso a tecla para cima esteja pressionda
             if(teclas[KEY_UP]){
+                //chamada do procedimento para adicionar na lista desenhos da nave com o propulsor ativado
                 atualizaDesenhos(jogo->listaDesenho,jogador->sprite[0],jogador->posicao);                
             }else{
+                //chamada do procedimento para adicionar na lista desenhos da nave com o propulsor desativado
                 atualizaDesenhos(jogo->listaDesenho,jogador->sprite[1],jogador->posicao);
             }
+            //desbloquiea dos endereços de memória acima
             al_unlock_mutex(jogo->listaDesenho->mutex);
-            
+            //armazena o tempo atual na variavél abaixo
             time(&tfim);
+            //calcula a diferença entre os tempos abaixo
             double diff = difftime(tfim,tinicio);
             double velocidade = difftime(tfim,dificuldade);
+            //caso o tempo de velocidade dos asteroids seja maior que 15 segundos
             if(velocidade > 15.0 ){
-                
+                //incrementa a velocidade dos asteroids
                 velocidadeAsteroid++;
+                //armazena o tempo atual da máquina na variavél abaixo
                 time(&dificuldade);
             }
+            //caso o intevalo de um asteroid para o outro tenha sido atingido
             if(diff > 0.005){
+                //carrega o sprite do asteroid 
                 ALLEGRO_BITMAP *sprite = al_load_bitmap("asteroid.png");
                 Coordenada *posicao;
                 al_lock_mutex(jogo->listaAsteroids->mutex);
+                // verfica qual o ponto de partida q o asteroid vai ser renderizado
                 switch(lado){
                     case 0:
                         posicao = initCoordenada(40,40,0,rand()%jogo->altura,rand()%90);
@@ -165,12 +221,13 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
                 
                 time(&tinicio);
             }
-            
+            //a thread descança por 0.05 segundos
             al_rest(0.05);
         }
 
      
     }
+    //no fim do jogo o endereço de memória abaixo é liberado
     al_destroy_sample(sample);
     
 }
