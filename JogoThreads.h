@@ -87,11 +87,11 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
         //aguarda um evendo vindo do teclado ou de tempo e armazena tal evento na variavél declarada acima
         al_wait_for_event(jogo->filaEventos, &evento);
         //caso o evento seja do tipo timer
-        if(evento.type == ALLEGRO_EVENT_TIMER){
+        if(evento.type == ALLEGRO_EVENT_TIMER &!menu){
             //a posição do jogador deve ser atualizada
             atualizaPosicao(jogador->posicao);
         // caso contrário se o evento seja to tipo tecla pressionada (ALLEGRO_EVENT_KEY_DOWN)
-        }else if(evento.type == ALLEGRO_EVENT_KEY_DOWN){
+        }else if(evento.type == ALLEGRO_EVENT_KEY_DOWN ){
             //switch para saber qual tecla foi pressionada
             switch(evento.keyboard.keycode) {
                 //caso seja seta para cima
@@ -142,7 +142,7 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
             
         }
         // caso seja preciso desenha e a fila de eventos eteja vazia
-        if(desenha && al_is_event_queue_empty(jogo->filaEventos)){
+        if(desenha && al_is_event_queue_empty(jogo->filaEventos) && !menu ){
             //define q não precisa ser desenhado pois já está dentro do bloco responsavél por isso
             desenha = 0;
             //caso a tecla espaço tenha sido pressionada
@@ -328,12 +328,10 @@ void controleAddRankig(Jogo *jogo){
             
             switch(evento.keyboard.keycode) {
                 case ALLEGRO_KEY_UP:
-                    opcao = (opcao+1)%36;                
-                    campos[opcao2] = opcao;  
+                    campos[opcao2] =  (campos[opcao2]+1)%36;  
                     break;
                 case ALLEGRO_KEY_DOWN:
-                    opcao = (opcao-1)%36;                
-                    campos[opcao2] = opcao;  
+                    campos[opcao2] =  (campos[opcao2]-1)%36;  
                     break;
                 case ALLEGRO_KEY_LEFT:
                     opcao2 = (opcao2-1)%3;                
@@ -365,8 +363,12 @@ void controleAddRankig(Jogo *jogo){
         }
      
     }
-    FILE *arq = fopen("ranking.rk","ab");
+    FILE *arq = fopen("ranking.rk","wb");
+	
     fprintf(arq,"%c%c%c: %d\n",valores[campos[0]],valores[campos[1]],valores[campos[2]],jogo->jogador->pontos);
     fclose(arq);
+    for(int i = 0 ; i < 5 ; i++){
+        teclas[i] = 0;
+    }
     exibeRanking(jogo);
 }

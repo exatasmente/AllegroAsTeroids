@@ -46,6 +46,37 @@ int main(){
     ALLEGRO_THREAD *threadTeclado = al_create_thread(&teclado,jogo);
 
     // loop inicial para exibir o menu do jogo
+    mostraMenu(jogo);
+    if(jogo->sair)
+        al_start_thread(threadTeclado);
+    
+    // Loop principal do jogo
+    while(jogo->sair){
+        if(!menu){
+            desenhaInterface(jogo);
+            desenhaNave(jogo);
+            desenhaTiros(jogo);
+            desenhaAsteroides(jogo);
+            if(jogo->jogador->vidas == 0){
+		menu = true;
+                controleAddRankig(jogo);
+	        jogador = initJogador(initCoordenada(24,24,320,240,0),3,0,sprites);
+		jogo->jogador= jogador;
+		velocidadeAsteroid = 4;
+		mostraMenu(jogo);
+		menu = false;
+            }   
+            
+        }
+    }
+    // libera o espaço de memória utilizado pelo som e pela thread
+    al_destroy_sample(explosaoSample);
+    al_destroy_thread(threadTeclado);
+    // chamada pro procedimento para finalizar o jogo
+    finaliza(jogo);
+    return 0;
+}
+void mostraMenu(Jogo *jogo){
     while(menu){
         controleMenu(jogo);
         switch(opcao){
@@ -59,32 +90,11 @@ int main(){
                 jogo->sair = 0;
                 menu = false;
                 break;
+	
+        }
 
-        }
     }
-    if(jogo->sair)
-        al_start_thread(threadTeclado);
-    
-    // Loop principal do jogo
-    while(jogo->sair){
-        if(!menu){
-            desenhaInterface(jogo);
-            desenhaNave(jogo);
-            desenhaTiros(jogo);
-            desenhaAsteroides(jogo);
-            if(jogo->jogador->vidas == 0){
-                controleAddRankig(jogo);
-                jogo->sair = 0;
-            }   
-            
-        }
-    }
-    // libera o espaço de memória utilizado pelo som e pela thread
-    al_destroy_sample(explosaoSample);
-    al_destroy_thread(threadTeclado);
-    // chamada pro procedimento para finalizar o jogo
-    finaliza(jogo);
-    return 0;
+
 }
 void desenhaInterface(Jogo *jogo){
     /*
@@ -368,6 +378,9 @@ void exibeRanking(Jogo *jogo){
     al_set_target_bitmap(buffer);
     al_draw_bitmap(jogo->fundo, 0, 0, 0);                
     arquivo = fopen("ranking.rk","rb");
+    if(arquivo == NULL){
+	arquivo = fopen("ranking.rk","wb");
+    }
     int ch;
     int qt = 0;
     while((ch = getc(arquivo)) != EOF){
