@@ -3,7 +3,6 @@
 #include "Jogador.h"
 //importação do controlador modelo-Interface Grafica 
 #include "Jogo.h"
-
 //importação das bibliotecas auxiliares
 #include <math.h>
 #include <time.h>
@@ -29,12 +28,11 @@ void controleAddRankig(Jogo *jogo);
 
 void atualizaPosicao(Coordenada *posicao){
     /*
-        Tem o dever de atualizar a coordenada atual do jogador baseado nas teclas pressionadas
-
+    Tem o dever de atualizar a coordenada atual do jogador baseado nas teclas pressionadas
     */
     if(teclas[KEY_UP]){
-        posicao->dy +=  sin(posicao->angulo*ALLEGRO_PI/180 ) * 5;
-        posicao->dx +=  cos(posicao->angulo*ALLEGRO_PI/180 ) * 5;
+        posicao->dy +=  sin(posicao->angulo*ALLEGRO_PI/180) * 5;
+        posicao->dx +=  cos(posicao->angulo*ALLEGRO_PI/180) * 5;
     }else if(teclas[KEY_DOWN]){
         posicao->dy -=  sin(posicao->angulo*ALLEGRO_PI/180 ) * 5;
         posicao->dx -=  cos(posicao->angulo*ALLEGRO_PI/180 ) * 5;
@@ -46,6 +44,7 @@ void atualizaPosicao(Coordenada *posicao){
     }      
     desenha = 1;
 }
+
 void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *posicao){
     /*
     Responsavél por inserir um desenho em uma das listas de desenhos utilizadas pelo programa
@@ -58,13 +57,9 @@ void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *p
 void * teclado(ALLEGRO_THREAD *thread,void *param){
     /*
     Procedimento de controle localizado entre a borda e os modelos 
-
     Procedimento chamado para ser rodado em uma thread
     Responsavél por escutar os eventos do teclado e do timer
     Assim controlando o que deve ser desenhado na tela
-
-
-
     */
     // variavéis auxiliares 
     Jogo *jogo = (Jogo*) param;
@@ -233,7 +228,7 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
 }
 int verificaPosicao(Jogo *jogo,Coordenada *posicao){
     if (posicao->dx >= jogo->largura || posicao->dx <= (jogo->largura*(-1))/2){
-            return 0;
+        return 0;
     }
     if (posicao->dy >= jogo->altura || posicao->dy <= (jogo->altura*(-1))/2 ){
         return 0;
@@ -351,6 +346,7 @@ void controleAddRankig(Jogo *jogo){
             al_draw_textf(jogo->fonte,(opcao2 == 1 ? escolha0 : escolha1),(jogo->largura/2), (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"%c",valores[campos[1]]);
             al_draw_textf(jogo->fonte,(opcao2 == 2 ? escolha0 : escolha1),(jogo->largura/2)+50, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"%c",valores[campos[2]]);
             
+            
                     
 
             al_set_target_bitmap(al_get_backbuffer(jogo->janela));
@@ -363,7 +359,7 @@ void controleAddRankig(Jogo *jogo){
         }
      
     }
-    FILE *arq = fopen("ranking.rk","wb");
+    FILE *arq = fopen("ranking.rk","ab");
 	
     fprintf(arq,"%c%c%c: %d\n",valores[campos[0]],valores[campos[1]],valores[campos[2]],jogo->jogador->pontos);
     fclose(arq);

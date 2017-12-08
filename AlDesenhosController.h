@@ -11,9 +11,8 @@ typedef struct listaDesenho{
     ALLEGRO_MUTEX *mutex;
     int qt;
     int tam;
-    int ids ;    
+    int ids;    
 }ListaDesenho;
-
 
 Desenho *novoDesenho(ALLEGRO_BITMAP *imagem,Coordenada *posicao,int flags);
 ListaDesenho *initListaDesenho(int tam);
@@ -65,16 +64,12 @@ Desenho *removerDesenho(ListaDesenho *lista,int id){
         for(int j = id ; j < lista->qt-1 ; j++){    
             lista->fila[j] = lista->fila[j+1];
         }
-      
         lista->qt--;
-        return desenho;
-        
+        return desenho;        
     }
     return NULL;
 }
 void removerDesativados(ListaDesenho *lista){
-
-
     if(lista->qt > 0){
         for(int j = 0 ; j < lista->qt ; j++){    
             if(lista->fila[j]->id == -1 ){                
@@ -86,8 +81,6 @@ void removerDesativados(ListaDesenho *lista){
                 lista->qt--;
             }
         }
-        
-        
     }
 
 }

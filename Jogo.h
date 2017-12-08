@@ -47,6 +47,7 @@ void initJogo(Jogo *novo){
     novo->janela = al_create_display(novo->largura,novo->altura);
     novo->filaEventos = al_create_event_queue();
     novo->fonte = al_load_font("ARCADE_I.TTF", 20, 0);
+    
 
     al_register_event_source(novo->filaEventos, al_get_keyboard_event_source());
     al_register_event_source(novo->filaEventos, al_get_display_event_source(novo->janela));

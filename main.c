@@ -15,7 +15,6 @@ void desenhaInterface(Jogo *jogo);
 void desenhaAsteroides(Jogo *jogo);
 void exibeRanking(Jogo *jogo);
 
-
 int main(){
     // Instância as variavéis de prioridade 1
     Jogo *jogo;
@@ -25,7 +24,6 @@ int main(){
     initJogo(jogo);
     // define a dificuldade inicial
     velocidadeAsteroid = 4;
-  
     // indica que o menu está ativo
     menu = true;
     // inicializa o mutex 
@@ -37,19 +35,16 @@ int main(){
     // carrega as imagens utilizadas na renderização da nve
     sprites[0] = al_load_bitmap("sprite.png");
     sprites[1] = al_load_bitmap("sprite1.png");
-
     // inicializa a variavél jogador 
     jogador = initJogador(initCoordenada(24,24,320,240,0),3,0,sprites);
     // define q o joador pertence à estrutura jogo
     jogo->jogador = jogador;
     //Instânica e inicializa a trhead que será usada para controle de eventos do jogo
     ALLEGRO_THREAD *threadTeclado = al_create_thread(&teclado,jogo);
-
     // loop inicial para exibir o menu do jogo
     mostraMenu(jogo);
     if(jogo->sair)
         al_start_thread(threadTeclado);
-    
     // Loop principal do jogo
     while(jogo->sair){
         if(!menu){
@@ -58,13 +53,13 @@ int main(){
             desenhaTiros(jogo);
             desenhaAsteroides(jogo);
             if(jogo->jogador->vidas == 0){
-		menu = true;
+        		menu = true;
                 controleAddRankig(jogo);
-	        jogador = initJogador(initCoordenada(24,24,320,240,0),3,0,sprites);
-		jogo->jogador= jogador;
-		velocidadeAsteroid = 4;
-		mostraMenu(jogo);
-		menu = false;
+	            jogador = initJogador(initCoordenada(24,24,320,240,0),3,0,sprites);
+		        jogo->jogador= jogador;
+		        velocidadeAsteroid = 4;
+		        mostraMenu(jogo);
+		        menu = false;
             }   
             
         }
@@ -92,7 +87,6 @@ void mostraMenu(Jogo *jogo){
                 break;
 	
         }
-
     }
 
 }
@@ -124,7 +118,7 @@ void desenhaInterface(Jogo *jogo){
     
 }
 void desenhaNave(Jogo *jogo){
-    // verifica se exixtem desenhos à serem renderizados 
+    //verifica se exixtem desenhos à serem renderizados 
     if(jogo->listaDesenho->qt > 0){        
         // define a variavél de sinal para colisão da nave com os asteroids com falso
         int colisao = 0;
@@ -148,7 +142,6 @@ void desenhaNave(Jogo *jogo){
         al_lock_mutex(jogo->listaAsteroids->mutex);
         // laco de repetição para verificar se hà colisão com os asteroids exibidos na tela 
         for(int j = 0 ; j < jogo->listaAsteroids->qt; j++){
-
             //Detecta Colisão
             asteroide = jogo->listaAsteroids->fila[j];
             //Colisão usando o método de distância
@@ -189,7 +182,7 @@ void desenhaNave(Jogo *jogo){
             }
         }else{
             // caso haja colisão a vida do jogador é decrementada
-            jogo->jogador->vidas -=1;
+            jogo->jogador->vidas -= 1;
 
         }
         
@@ -381,6 +374,7 @@ void exibeRanking(Jogo *jogo){
     if(arquivo == NULL){
 	arquivo = fopen("ranking.rk","wb");
     }
+
     int ch;
     int qt = 0;
     while((ch = getc(arquivo)) != EOF){
