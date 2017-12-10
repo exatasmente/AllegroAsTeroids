@@ -41,13 +41,13 @@ int main(){
     jogo->jogador = jogador;
     //Instânica e inicializa a trhead que será usada para controle de eventos do jogo
     ALLEGRO_THREAD *threadTeclado = al_create_thread(&teclado,jogo);
-    
+    ALLEGRO_THREAD *threadMultiplayer = al_create_thread(&clientSocketHanddle,jogo);
     // loop inicial para exibir o menu do jogo
     mostraMenu(jogo);
-    if(jogo->sair)
+    if(jogo->sair){
         al_start_thread(threadTeclado);
-
-
+        al_start_thread(threadMultiplayer);
+    }
     // Loop principal do jogo
     while(jogo->sair){
         if(!menu){
@@ -70,6 +70,7 @@ int main(){
     // libera o espaço de memória utilizado pelo som e pela thread
     al_destroy_sample(explosaoSample);
     al_destroy_thread(threadTeclado);
+    al_destroy_thread(threadMultiplayer);
     // chamada pro procedimento para finalizar o jogo
     finaliza(jogo);
     return 0;

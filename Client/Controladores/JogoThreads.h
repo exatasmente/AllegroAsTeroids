@@ -60,12 +60,7 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
     int lado = 0;
     //inicializa o rand
     srand(time(NULL));
-    //variavéis de verificação de intervalo de tempo
-    time_t tinicio, tfim;
-    time_t dificuldade;
-    //armazena o tempo atual da máquina nas duas variavéis abaixo
-    time(&tinicio);
-    time(&dificuldade);
+
     // instância e inicaializa a variavél "sample" com o som a ser reproduzido no disparo
     ALLEGRO_SAMPLE *sample = al_load_sample("Sons/tiro.wav");
 
@@ -165,53 +160,6 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
             //desbloquiea dos endereços de memória acima
             al_unlock_mutex(jogo->listaDesenho->mutex);
             //armazena o tempo atual na variavél abaixo
-            time(&tfim);
-            
-            //calcula a diferença entre os tempos abaixo
-            double diff = difftime(tfim,tinicio);
-            double velocidade = difftime(tfim,dificuldade);
-            //caso o tempo de velocidade dos asteroids seja maior que 15 segundos
-            if(velocidade > 15.0 ){
-                //incrementa a velocidade dos asteroids
-                velocidadeAsteroid++;
-                //armazena o tempo atual da máquina na variavél abaixo
-                time(&dificuldade);
-            }
-            //caso o intevalo de um asteroid para o outro tenha sido atingido
-            if(diff > 1){
-                //carrega o sprite do asteroid 
-                
-                ALLEGRO_BITMAP *sprite = al_load_bitmap("Sprites/Asteroid/asteroid.png");
-                Coordenada *posicao;
-                al_lock_mutex(jogo->listaAsteroids->mutex);
-                // verfica qual o ponto de partida q o asteroid vai ser renderizado
-                switch(lado){
-                    case 0:
-                        posicao = initCoordenada(40,40,10,rand()%jogo->altura,rand()%360);
-                        atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
-                        lado = rand()%4;
-                        break;
-                    case 1:
-                        posicao = initCoordenada(40,40,rand()%jogo->largura,10,rand()%360);
-                        atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
-                        lado = rand()%4;
-                        break;
-                    case 2:
-                        posicao = initCoordenada(40,40,rand()%jogo->largura,jogo->altura,rand()%360);
-                        atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
-                        lado = rand()%4;
-                        break;
-                    case 3:
-                        posicao = initCoordenada(40,40,jogo->largura,rand()%jogo->altura,rand()%360);
-                        atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
-                        lado = rand()%4;
-                        break;
-                }
-                al_unlock_mutex(jogo->listaAsteroids->mutex);
-                
-                time(&tinicio);
-                
-            }
             
             //a thread descança por 0.05 segundos
             al_rest(0.05);
@@ -356,7 +304,7 @@ void controleAddRankig(Jogo *jogo){
         }
      
     }
-    FILE *arq = fopen("../ranking.rk","ab");
+    FILE *arq = fopen("ranking.rk","ab");
 	
     fprintf(arq,"%c%c%c: %d\n",valores[campos[0]],valores[campos[1]],valores[campos[2]],jogo->jogador->pontos);
     fclose(arq);
