@@ -8,6 +8,10 @@ Allegro C lang Asteroids game
 ## Servidor
   gcc main.c -o servidor -lm 
 # Para executar
+## Cliente
+### Primeio é necessário executar o Servidor
+  ./servidor
+  
  ./asteroids
 
 ## Bibliotecas:
