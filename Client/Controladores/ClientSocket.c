@@ -22,7 +22,7 @@ void *clientSocketHanddle(ALLEGRO_THREAD *thread ,void *param){
 
     enderecoServidor.sin_family = AF_INET;
     enderecoServidor.sin_port = htons(7891);
-    enderecoServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
+    enderecoServidor.sin_addr.s_addr = inet_addr("192.168.1.11");
     memset(enderecoServidor.sin_zero, '\0', sizeof enderecoServidor.sin_zero);  
 
     enderecoSize = sizeof enderecoServidor;
