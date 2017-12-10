@@ -1,5 +1,6 @@
 # AllegroAsteroidsTzil
 Allegro C lang Asteroids game 
+Feito com suor e lágrimas e ♥ em C
 # Dependências
   Allegro5
 # Para compilar
