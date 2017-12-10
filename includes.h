@@ -8,10 +8,28 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <time.h>
 
-#include "JogoThreads.h"
+#include "Modelos/Coordenada.h"
+#include "Modelos/Jogador.h"
 
-char *d[] = {"explosao0.png","explosao1.png","explosao3.png","explosao4.png","explosao5.png","explosao6.png","explosao7.png","explosao7.png","explosao8.png","explosao9.png","explosao10.png","explosao11.png"};
+#include "Jogo.h"
+
+#include "Controladores/JogoThreads.h"
+
+char *d[] = {"Sprites/Explosao/explosao0.png",
+             "Sprites/Explosao/explosao1.png",
+             "Sprites/Explosao/explosao3.png",
+             "Sprites/Explosao/explosao4.png",
+             "Sprites/Explosao/explosao5.png",
+             "Sprites/Explosao/explosao6.png",
+             "Sprites/Explosao/explosao7.png",
+             "Sprites/Explosao/explosao7.png",
+             "Sprites/Explosao/explosao8.png",
+             "Sprites/Explosao/explosao9.png",
+             "Sprites/Explosao/explosao10.png",
+             "Sprites/Explosao/explosao11.png"};
 
 
 

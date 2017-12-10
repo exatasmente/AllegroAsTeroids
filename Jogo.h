@@ -1,4 +1,4 @@
-#include "AlDesenhosController.h"
+#include "Controladores/AlDesenhosController.h"
 
 ALLEGRO_MUTEX *mutex;
 
@@ -43,10 +43,10 @@ void initJogo(Jogo *novo){
     novo->timer = al_create_timer(1.0/60);
     novo->listaDesenho = initListaDesenho(10);
     novo->listaTiros = initListaDesenho(5);
-    novo->listaAsteroids = initListaDesenho(50);
+    novo->listaAsteroids = initListaDesenho(500);
     novo->janela = al_create_display(novo->largura,novo->altura);
     novo->filaEventos = al_create_event_queue();
-    novo->fonte = al_load_font("ARCADE_I.TTF", 20, 0);
+    novo->fonte = al_load_font("Fontes/ARCADE_I.TTF", 20, 0);
     
 
     al_register_event_source(novo->filaEventos, al_get_keyboard_event_source());
@@ -55,7 +55,7 @@ void initJogo(Jogo *novo){
 
     al_set_window_title(novo->janela, "Asteroids");
     
-    novo->fundo = al_load_bitmap("bg.jpeg");
+    novo->fundo = al_load_bitmap("Sprites/bg.jpeg");
     al_draw_bitmap(novo->fundo, 0, 0, 0);
     al_flip_display();
     al_start_timer(novo->timer);

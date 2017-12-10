@@ -29,22 +29,25 @@ int main(){
     // inicializa o mutex 
     mutex  = al_create_mutex();
     // carrega o som utilizado na explosão do asteroid
-    explosaoSample = al_load_sample("explosao.wav");
+    explosaoSample = al_load_sample("Sons/explosao.wav");
     // Instância um vetor com dois ponteiros para uma Estrutura do tipo ALLEGRO_BITMAP
     ALLEGRO_BITMAP *sprites[2];
     // carrega as imagens utilizadas na renderização da nve
-    sprites[0] = al_load_bitmap("sprite.png");
-    sprites[1] = al_load_bitmap("sprite1.png");
+    sprites[0] = al_load_bitmap("Sprites/Jogador/sprite.png");
+    sprites[1] = al_load_bitmap("Sprites/Jogador/sprite1.png");
     // inicializa a variavél jogador 
     jogador = initJogador(initCoordenada(24,24,320,240,0),3,0,sprites);
     // define q o joador pertence à estrutura jogo
     jogo->jogador = jogador;
     //Instânica e inicializa a trhead que será usada para controle de eventos do jogo
     ALLEGRO_THREAD *threadTeclado = al_create_thread(&teclado,jogo);
+    
     // loop inicial para exibir o menu do jogo
     mostraMenu(jogo);
     if(jogo->sair)
         al_start_thread(threadTeclado);
+
+
     // Loop principal do jogo
     while(jogo->sair){
         if(!menu){

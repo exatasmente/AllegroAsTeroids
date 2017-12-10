@@ -49,11 +49,14 @@ void addDesenho(ListaDesenho *lista,Desenho *desenho){
         if(lista->ids > lista->tam){
             lista->ids = 0;
         }
-        if(lista->qt <= lista->tam){
-            lista->fila[lista->qt] = desenho;
-            lista->qt++;
-        }
+        lista->fila[lista->qt] = desenho;
+        lista->qt++;
+        
+    }else{
+        al_destroy_bitmap(desenho->imagem);
+        free(desenho);
     }
+    
     
 }
 Desenho *removerDesenho(ListaDesenho *lista,int id){
@@ -72,13 +75,16 @@ Desenho *removerDesenho(ListaDesenho *lista,int id){
 void removerDesativados(ListaDesenho *lista){
     if(lista->qt > 0){
         for(int j = 0 ; j < lista->qt ; j++){    
-            if(lista->fila[j]->id == -1 ){                
-                
-                for(int i = j ; i < lista->qt; i++){
+            if(lista->fila[j]->id == -1 ){
+                al_destroy_bitmap(lista->fila[j]->imagem);
+                free(lista->fila[j]);
+                for(int i = j ; i < lista->qt-1; i++){
                     lista->fila[i] = lista->fila[i+1];                    
                 }
                 
                 lista->qt--;
+            
+                
             }
         }
     }
