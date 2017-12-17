@@ -101,6 +101,7 @@ void desenhaInterface(Jogo *jogo){
     e depois exibir tal bitmap na tela
     */
     // Instância uma váriavél do tipo ALLEGRO_BITMAP
+    /*
     ALLEGRO_BITMAP *buffer = NULL;
     // inicializar a variavél difinindo as dimenções do bitmap 
     buffer = al_create_bitmap(jogo->largura,jogo->altura);
@@ -108,18 +109,23 @@ void desenhaInterface(Jogo *jogo){
     al_set_target_bitmap(buffer);
     // desenha no bitmap "buffer" o que está sendo exibido na tela
     al_draw_bitmap(al_get_backbuffer(jogo->janela), 0, 0, 0);     
+    */
+    
     // desenha os textos indicando os pontos do jogador e as vidas restantes do mesmo           
     al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), 10, 10, ALLEGRO_ALIGN_LEFT,"PONTOS : %d", jogo->jogador->pontos);
     al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), jogo->largura-200, 10, ALLEGRO_ALIGN_LEFT," VIDAS:  %d", jogo->jogador->vidas);
     // atualiza o bitmap com os desenho definidos
-    atualiza();
+    
     // define a tela com área de desenho
+    /*
     al_set_target_bitmap(al_get_backbuffer(jogo->janela));
     // desenha o bitmap "buffer" na tela q será exibida ao usuário
     al_draw_bitmap(buffer,0,0,0);
+    
     // libera o espaço de memória utlizado pela variavél "buffer"
     al_destroy_bitmap(buffer);    
-    
+    */
+    atualiza();
 }
 void desenhaNave(Jogo *jogo){
     //verifica se exixtem desenhos à serem renderizados 
@@ -141,13 +147,13 @@ void desenhaNave(Jogo *jogo){
         // bloqueia a regiao de memória da lista de desenhos relacionado à nave do jogador
         al_lock_mutex(jogo->listaDesenho->mutex);            
         // retira um desenho da lista de desenhos 
-        desenho = removerDesenho(jogo->listaDesenho,0);
+        desenho = removerDesenho(jogo->listaDesenho);
         // bloqueia a regiao de memória da lista de desenhos relacionado aos asteroids 
         al_lock_mutex(jogo->listaAsteroids->mutex);
         // laco de repetição para verificar se hà colisão com os asteroids exibidos na tela 
-        for(int j = 0 ; j < jogo->listaAsteroids->qt; j++){
+        for(Node *aux = jogo->listaAsteroids->inicio->prox ; aux != jogo->listaAsteroids->fim ;aux = aux->prox){
             //Detecta Colisão
-            asteroide = jogo->listaAsteroids->fila[j];
+            asteroide = aux->valor;
             //Colisão usando o método de distância
             float distancia = sqrt(pow(desenho->posicao->dx-asteroide->posicao->dx,2)+ pow(desenho->posicao->dy-asteroide->posicao->dy,2));
             if(distancia < desenho->posicao->x+desenho->posicao->y ){
@@ -168,6 +174,7 @@ void desenhaNave(Jogo *jogo){
             //Verifica se a posição atual do jogador está dentro da tela
             if(verificaPosicao(jogo,desenho->posicao)){
                 //desenha no bitmap "buffer" o sprite da nave na coordenada passada como parânmetro
+                
                 al_draw_rotated_bitmap(desenho->imagem,
                                        desenho->posicao->x,
                                        desenho->posicao->y,
@@ -175,7 +182,7 @@ void desenhaNave(Jogo *jogo){
                                        desenho->posicao->dy,
                                        desenho->posicao->angulo*ALLEGRO_PI/180,
                                        desenho->flags);
-                
+             //   al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), desenho->posicao->dx, desenho->posicao->dy, ALLEGRO_ALIGN_LEFT,"%.2f %.2f",desenho->posicao->dx,desenho->posicao->dy);
                 // troca o bitmap padrão para o bitimap da tela
                 al_set_target_bitmap(al_get_backbuffer(jogo->janela));
                 // desenha o bitmap "buffer" na tela
@@ -199,6 +206,7 @@ void desenhaNave(Jogo *jogo){
 void desenhaTiros(Jogo *jogo){
     // verifica se exixtem desenhos à serem renderizados 
     if(jogo->listaTiros->qt > 0){
+            
             //Instância uma variavél do tipo ALLEGRO_BITMAP
             ALLEGRO_BITMAP *buffer = NULL;
             //inicializa a variavél "buffer"
@@ -214,9 +222,11 @@ void desenhaTiros(Jogo *jogo){
             //define a variavél de sinal para colisão como false
             int colisao = 0;
             //laco de repetição para verificar cada tiro à sder exibido na tela
-            for(int i = 0 ; i < jogo->listaTiros->qt ; i++){
+            al_lock_mutex(jogo->listaTiros->mutex);
+            Node *aux;
+            for(aux = jogo->listaTiros->inicio->prox ; aux != jogo->listaTiros->fim ; aux = aux->prox){                    
                 // Atualiza Posição dos tiros
-                tiro = jogo->listaTiros->fila[i];
+                tiro = aux->valor;
                 tiro->posicao->dy +=  sin(tiro->posicao->angulo*ALLEGRO_PI/180 ) * 15;
                 tiro->posicao->dx +=  cos(tiro->posicao->angulo*ALLEGRO_PI/180 ) * 15;
                 // verifica se a posição do tiro à ser renderizado está dentro da tela
@@ -224,8 +234,10 @@ void desenhaTiros(Jogo *jogo){
                     // bloquiea a endereço de menória utilizada pela lista de asteroids
                     al_lock_mutex(jogo->listaAsteroids->mutex);
                     // laco de repetição para para verificar se os asteroids foram atingidos pelo tiro atual
-                    for(int j = 0 ; j < jogo->listaAsteroids->qt; j++){
-                        asteroide = jogo->listaAsteroids->fila[j];
+                    for(Node *aux2  = jogo->listaAsteroids->inicio->prox; aux2 != jogo->listaAsteroids->fim ; aux2 = aux2->prox){
+                        if(aux2->valor == NULL)
+                            puts("AKI2");
+                        asteroide = aux2->valor;
                         // caso o id dos asteroid seja diferente dos valores -1 e -2 
                         if(asteroide->id >= 0){
                             //Detecta Colisão
@@ -249,11 +261,9 @@ void desenhaTiros(Jogo *jogo){
                         // define que o asteroid foi atingido
                         asteroide->id = -2;
                         //Bloquiea do endereço de memória utlizado abaixo
-                        al_lock_mutex(jogo->listaTiros->mutex);
                         // define q o tiro tem que ser removido da lista de tiros
                         tiro->id = -1;
                         // desbloqueia do endereçco de memória utilizado acima
-                        al_unlock_mutex(jogo->listaTiros->mutex);
                         // define a variavé de colisão como falso
                         colisao = 0;
                     }else{
@@ -271,13 +281,13 @@ void desenhaTiros(Jogo *jogo){
                     al_unlock_mutex(jogo->listaAsteroids->mutex);
                 }else{
                     // bloquiea o endereco de memória
-                    al_lock_mutex(jogo->listaTiros->mutex);
+        
                     // defina q o tiro tem q ser removido
                     tiro->id = -1;
                     // desbloquiea o endereco de memória
-                    al_unlock_mutex(jogo->listaTiros->mutex);
                 }
             }
+            al_unlock_mutex(jogo->listaTiros->mutex);
             // troca o bitmap para o bitmap da tela
             al_set_target_bitmap(al_get_backbuffer(jogo->janela));
             // desenha o bitamap "buffer" na tela
@@ -307,8 +317,8 @@ void desenhaAsteroides(Jogo *jogo){
             //bloqueia o endereço de memória
             al_lock_mutex(jogo->listaAsteroids->mutex);                
             // laco de repetição para percorrer a lista de asteroids
-            for(int i = 0 ; i < jogo->listaAsteroids->qt ; i++){
-                asteroide = jogo->listaAsteroids->fila[i];
+            for(Node *aux = jogo->listaAsteroids->inicio->prox ; aux != jogo->listaAsteroids->fim ;aux = aux->prox){
+                asteroide = aux->valor;
                 // caso a asteroide seja válido
                 if(asteroide->id >= 0){
                     // atualiza a posição dele

@@ -2,20 +2,22 @@ enum TECLAS {
    KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE
 };
 
-// variavéis de controle
+//variavéis de controle
 bool menu;
+bool desenha;
+bool teclas[5] = {0,0,0,0,0};
+
 int opcao;
 int opcao2;
-int desenha;
 int velocidadeAsteroid;
-int teclas[5] = {0,0,0,0,0};
 
-// assinatura dos procedimentos
-void * teclado(ALLEGRO_THREAD *thread,void *param);
+//Assinatura dos procedimentos
+void *teclado(ALLEGRO_THREAD *thread,void *param);
 void atualizaPosicao(Coordenada *posicao);
 void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *posicao);
 void controleMenu(Jogo *jogo);
 void controleAddRankig(Jogo *jogo);
+
 
 void atualizaPosicao(Coordenada *posicao){
     /*
@@ -35,7 +37,7 @@ void atualizaPosicao(Coordenada *posicao){
         posicao->angulo =  posicao->angulo+4 >= 360 ? 0 : posicao->angulo+4;
     
     }      
-    desenha = 1;
+    desenha = true;
 }
 
 void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *posicao){
@@ -43,10 +45,11 @@ void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *p
     Responsavél por inserir um desenho em uma das listas de desenhos utilizadas pelo programa
     */
     Desenho *desenho = novoDesenho(sprite,posicao,0);
-    addDesenho(lista,desenho);
+    addDesenho(lista,novoNode(desenho));
     desenho = NULL;
     
 }
+
 void * teclado(ALLEGRO_THREAD *thread,void *param){
     /*
     Procedimento de controle localizado entre a borda e os modelos 
@@ -60,7 +63,12 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
     int lado = 0;
     //inicializa o rand
     srand(time(NULL));
-
+    //variavéis de verificação de intervalo de tempo
+    time_t tinicio, tfim;
+    time_t dificuldade;
+    //armazena o tempo atual da máquina nas duas variavéis abaixo
+    time(&tinicio);
+    time(&dificuldade);
     // instância e inicaializa a variavél "sample" com o som a ser reproduzido no disparo
     ALLEGRO_SAMPLE *sample = al_load_sample("Sons/tiro.wav");
 
@@ -71,6 +79,7 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
         al_wait_for_event(jogo->filaEventos, &evento);
         //caso o evento seja do tipo timer
         if(evento.type == ALLEGRO_EVENT_TIMER &!menu){
+            
             //a posição do jogador deve ser atualizada
             atualizaPosicao(jogador->posicao);
         // caso contrário se o evento seja to tipo tecla pressionada (ALLEGRO_EVENT_KEY_DOWN)
@@ -160,9 +169,56 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
             //desbloquiea dos endereços de memória acima
             al_unlock_mutex(jogo->listaDesenho->mutex);
             //armazena o tempo atual na variavél abaixo
+            time(&tfim);
+            
+            //calcula a diferença entre os tempos abaixo
+            double diff = difftime(tfim,tinicio);
+            double velocidade = difftime(tfim,dificuldade);
+            //caso o tempo de velocidade dos asteroids seja maior que 15 segundos
+            if(velocidade > 15.0 ){
+                //incrementa a velocidade dos asteroids
+                velocidadeAsteroid++;
+                //armazena o tempo atual da máquina na variavél abaixo
+                time(&dificuldade);
+            }
+            //caso o intevalo de um asteroid para o outro tenha sido atingido
+            if(diff > 1){
+                //carrega o sprite do asteroid 
+                
+                ALLEGRO_BITMAP *sprite = al_load_bitmap("Sprites/Asteroid/asteroid.png");
+                Coordenada *posicao;
+                al_lock_mutex(jogo->listaAsteroids->mutex);
+                // verfica qual o ponto de partida q o asteroid vai ser renderizado
+                switch(lado){
+                    case 0:
+                        posicao = initCoordenada(40,40,10,rand()%jogo->altura,rand()%360);
+                        atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
+                        lado = rand()%4;
+                        break;
+                    case 1:
+                        posicao = initCoordenada(40,40,rand()%jogo->largura,10,rand()%360);
+                        atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
+                        lado = rand()%4;
+                        break;
+                    case 2:
+                        posicao = initCoordenada(40,40,rand()%jogo->largura,jogo->altura,rand()%360);
+                        atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
+                        lado = rand()%4;
+                        break;
+                    case 3:
+                        posicao = initCoordenada(40,40,jogo->largura,rand()%jogo->altura,rand()%360);
+                        atualizaDesenhos(jogo->listaAsteroids,sprite,posicao);
+                        lado = rand()%4;
+                        break;
+                }
+                al_unlock_mutex(jogo->listaAsteroids->mutex);
+                
+                time(&tinicio);
+                
+            }
             
             //a thread descança por 0.05 segundos
-            al_rest(0.05);
+            
         }
 
      

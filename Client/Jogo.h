@@ -42,8 +42,8 @@ void initJogo(Jogo *novo){
     
     novo->timer = al_create_timer(1.0/60);
     novo->listaDesenho = initListaDesenho(10);
-    novo->listaTiros = initListaDesenho(5);
-    novo->listaAsteroids = initListaDesenho(500);
+    novo->listaTiros = initListaDesenho(10);
+    novo->listaAsteroids = initListaDesenho(10);
     novo->janela = al_create_display(novo->largura,novo->altura);
     novo->filaEventos = al_create_event_queue();
     novo->fonte = al_load_font("Fontes/ARCADE_I.TTF", 20, 0);

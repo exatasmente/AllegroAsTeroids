@@ -37,7 +37,7 @@ Estrutura responsavél por armazenar os dados relacionados ao jogador, contendo 
 
 # Esquema das Estruturas:
 
-<img src="Diagrama1.png">
+<img src="esquema.png">
 
 # Funções e Procedimentos Utilizadas da Biblioteca Allegro e Dependências
 

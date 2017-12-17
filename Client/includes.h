@@ -31,8 +31,3 @@ char *d[] = {"Sprites/Explosao/explosao0.png",
              "Sprites/Explosao/explosao9.png",
              "Sprites/Explosao/explosao10.png",
              "Sprites/Explosao/explosao11.png"};
-
-
-
-
-

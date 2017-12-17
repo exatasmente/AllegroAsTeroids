@@ -6,8 +6,14 @@ typedef struct desenho{
     int posExplosao;
 }Desenho;
 
+typedef struct node{
+    struct node *prox;
+    struct node *ant;
+    Desenho *valor;
+}Node;
 typedef struct listaDesenho{
-    Desenho **fila;
+    Node *inicio;
+    Node *fim;
     ALLEGRO_MUTEX *mutex;
     int qt;
     int tam;
@@ -16,10 +22,11 @@ typedef struct listaDesenho{
 
 Desenho *novoDesenho(ALLEGRO_BITMAP *imagem,Coordenada *posicao,int flags);
 ListaDesenho *initListaDesenho(int tam);
-void addDesenho(ListaDesenho *lista,Desenho *desenho);
-Desenho *removerDesenho(ListaDesenho *lista,int id);
+void addDesenho(ListaDesenho *lista,Node *node);
+Desenho *removerDesenho(ListaDesenho *lista);
 void removerDesativados(ListaDesenho *lista);
 void destroyDesenho(ListaDesenho *lista);
+Node *novoNode(Desenho *valor);
 
 Desenho *novoDesenho(ALLEGRO_BITMAP *imagem,Coordenada *posicao,int flags){
     Desenho *novo;
@@ -32,63 +39,91 @@ Desenho *novoDesenho(ALLEGRO_BITMAP *imagem,Coordenada *posicao,int flags){
     novo->posExplosao = 0;
     return novo;
 }
+Node *novoNode(Desenho *valor)
+    {
+    Node *novo;
+    novo = (Node*) malloc(sizeof(Node));
+    novo->ant  = NULL;
+    novo->prox = NULL;
+    novo->valor = valor;
+
+    return novo;
+}
+
 
 ListaDesenho *initListaDesenho(int tam){
     ListaDesenho *novo;
+
     novo = (ListaDesenho*) malloc(sizeof(ListaDesenho));
-    novo->fila = (Desenho**) malloc(sizeof(Desenho*)*tam);
+
+    novo->inicio = novoNode(NULL);
+    novo->fim = novoNode(NULL);
+    novo->inicio->prox = novo->fim;
+    novo->fim->ant = novo->inicio;
+
     novo->mutex =  al_create_mutex();
     novo->tam = tam;
     novo->qt = 0;
     novo->ids = 0;
 }
 
-void addDesenho(ListaDesenho *lista,Desenho *desenho){
+void addDesenho(ListaDesenho *lista,Node *node){
     if(lista->qt < lista->tam){
-        desenho->id = lista->ids++;
-        if(lista->ids > lista->tam){
-            lista->ids = 0;
-        }
-        lista->fila[lista->qt] = desenho;
-        lista->qt++;
+      if(lista->inicio->prox == lista->fim)
+        {
+        lista->inicio->prox = node;
+        node->ant = lista->inicio;
+        node->prox = lista->fim;
+        lista->fim->ant = node;
+        }else
+            {
+            lista->inicio->prox->ant = node;
+            node->prox = lista->inicio->prox;
+            node->ant = lista->inicio;
+            lista->inicio->prox = node;
         
+        }
+        lista->qt++;
     }else{
-        al_destroy_bitmap(desenho->imagem);
-        free(desenho);
+        al_destroy_bitmap(node->valor->imagem);
+        free(node);
     }
     
     
 }
-Desenho *removerDesenho(ListaDesenho *lista,int id){
-    if(lista->qt > 0){
-        Desenho *desenho;
-        desenho = lista->fila[id];
-        
-        for(int j = id ; j < lista->qt-1 ; j++){    
-            lista->fila[j] = lista->fila[j+1];
-        }
+
+Desenho *removerDesenho(ListaDesenho *lista){
+    if(lista->qt > 0)
+        {
+        Node *aux = lista->inicio->prox;
+        aux->prox->ant = lista->inicio;
+        lista->inicio->prox = aux->prox;
         lista->qt--;
-        return desenho;        
+        return aux->valor;
     }
     return NULL;
 }
 void removerDesativados(ListaDesenho *lista){
     if(lista->qt > 0){
-        for(int j = 0 ; j < lista->qt ; j++){    
-            if(lista->fila[j]->id == -1 ){
-                al_destroy_bitmap(lista->fila[j]->imagem);
-                free(lista->fila[j]);
-                for(int i = j ; i < lista->qt-1; i++){
-                    lista->fila[i] = lista->fila[i+1];                    
-                }
+        Node *aux = lista->inicio->prox;
+        Node *aux2;
+        while(aux != lista->fim)
+            {
+            if(aux->valor->id == -1 )
+                {
+                al_destroy_bitmap(aux->valor->imagem);
                 
+                aux->prox->ant = aux->ant;
+                aux->prox->ant->prox = aux->prox;
                 lista->qt--;
-            
-                
+                free(aux->valor);
+                aux = aux->prox->ant->prox ;    
+            }else
+                {
+                aux = aux->prox;
             }
-        }
+        }        
     }
-
 }
 void destroyDesenho(ListaDesenho *lista){
     al_destroy_mutex(lista->mutex);
