@@ -13,30 +13,51 @@ int velocidadeAsteroid;
 
 //Assinatura dos procedimentos
 void *teclado(ALLEGRO_THREAD *thread,void *param);
-void atualizaPosicao(Coordenada *posicao);
+void atualizaPosicao(Jogo *jogo,Coordenada *posicao);
 void atualizaDesenhos(ListaDesenho *lista,ALLEGRO_BITMAP *sprite , Coordenada *posicao);
 void controleMenu(Jogo *jogo);
 void controleAddRankig(Jogo *jogo);
 
 
-void atualizaPosicao(Coordenada *posicao){
+void atualizaPosicao(Jogo *jogo,Coordenada *posicao){
     /*
     Tem o dever de atualizar a coordenada atual do jogador baseado nas teclas pressionadas
     */
-    if(teclas[KEY_UP]){
-        posicao->dy +=  sin(posicao->angulo*ALLEGRO_PI/180) * 5;
-        posicao->dx +=  cos(posicao->angulo*ALLEGRO_PI/180) * 5;
-    }else if(teclas[KEY_DOWN]){
-        posicao->dy -=  sin(posicao->angulo*ALLEGRO_PI/180 ) * 5;
-        posicao->dx -=  cos(posicao->angulo*ALLEGRO_PI/180 ) * 5;
-    }
-    if(teclas[KEY_LEFT]){
-        posicao->angulo = posicao->angulo-4 <= 0 ? 360 : posicao->angulo-4 ;
+
+        if(teclas[KEY_UP]){
+            posicao->dy +=   sin(posicao->angulo*ALLEGRO_PI/180) * 5;
+            posicao->dx +=  cos(posicao->angulo*ALLEGRO_PI/180) * 5;
+            if(!verificaPosicao(jogo,posicao)){
+                if(posicao->dy > jogo->altura){
+                    posicao->dy = -10;
+                }else if(posicao->dy < -10){
+                    posicao->dy = jogo->altura;
+                }
+                
+                if(posicao->dx > jogo->largura){
+                    posicao->dx = -10;
+                }else if(posicao->dx < -10){
+                    posicao->dx = jogo->largura;
+                }
+            
+            }
+        }else if(teclas[KEY_DOWN]){
+            posicao->dy -=  sin(posicao->angulo*ALLEGRO_PI/180 ) * 5;
+            posicao->dx -=  cos(posicao->angulo*ALLEGRO_PI/180 ) * 5;
+            if(!verificaPosicao(jogo,posicao)){
+                posicao->dy +=  sin(posicao->angulo*ALLEGRO_PI/180 ) * 5;
+                posicao->dx +=  cos(posicao->angulo*ALLEGRO_PI/180 ) * 5;
+            }
+        }
+        if(teclas[KEY_LEFT]){
+            posicao->angulo = posicao->angulo-4 <= 0 ? 360 : posicao->angulo-4 ;
+            
+        }else if(teclas[KEY_RIGHT]){
+            posicao->angulo =  posicao->angulo+4 >= 360 ? 0 : posicao->angulo+4;
+            
+        }
     
-    }else if(teclas[KEY_RIGHT]){
-        posicao->angulo =  posicao->angulo+4 >= 360 ? 0 : posicao->angulo+4;
     
-    }      
     desenha = true;
 }
 
@@ -81,7 +102,7 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
         if(evento.type == ALLEGRO_EVENT_TIMER &!menu){
             
             //a posição do jogador deve ser atualizada
-            atualizaPosicao(jogador->posicao);
+            atualizaPosicao(jogo,jogador->posicao);
         // caso contrário se o evento seja to tipo tecla pressionada (ALLEGRO_EVENT_KEY_DOWN)
         }else if(evento.type == ALLEGRO_EVENT_KEY_DOWN ){
             //switch para saber qual tecla foi pressionada
@@ -228,10 +249,10 @@ void * teclado(ALLEGRO_THREAD *thread,void *param){
     
 }
 int verificaPosicao(Jogo *jogo,Coordenada *posicao){
-    if (posicao->dx >= jogo->largura || posicao->dx <= (jogo->largura*(-1))/2){
+    if (posicao->dx >= jogo->largura || posicao->dx < -10 ){
         return 0;
     }
-    if (posicao->dy >= jogo->altura || posicao->dy <= (jogo->altura*(-1))/2 ){
+    if (posicao->dy >= jogo->altura || posicao->dy < -10){
         return 0;
     }
     return 1;

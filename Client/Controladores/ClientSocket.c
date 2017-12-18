@@ -3,6 +3,13 @@
 
 #define PORT 8080
 
+int cSocket, porta, nBytes;
+
+struct sockaddr_in enderecoServidor;
+socklen_t enderecoSize;
+
+
+
 typedef struct socketData
     {
     int tipo;
@@ -11,15 +18,50 @@ typedef struct socketData
 
 Coordenada *charToCoordenada(char *msg);
 
+
+void *recebe(ALLEGRO_THREAD *thread ,void *param){
+    Jogo *jogo = (Jogo*)param;
+    
+    while(jogo->sair)
+        {
+        char *buffer[61];
+        Coordenada *dados;
+        recvfrom(cSocket,buffer,sizeof(char)*62 ,0,NULL, NULL);
+        printf("%s\n",buffer);
+        dados = charToCoordenada(buffer);
+        switch(dados->tipo)
+            {
+            case 0:
+                al_lock_mutex(jogo->listaTiros->mutex);
+                if(jogo->listaDesenho->qt < jogo->listaDesenho->tam)
+                    {
+                    atualizaDesenhos(jogo->listaTiros,al_load_bitmap("Sprites/Jogador/sprite1.png"),dados);
+                }
+                al_unlock_mutex(jogo->listaTiros->mutex);
+            break;
+
+            case 1:
+
+            break;
+
+            case 2:
+                al_lock_mutex(jogo->listaAsteroids->mutex);
+                if(jogo->listaAsteroids->qt < jogo->listaAsteroids->tam)
+                    {
+                    atualizaDesenhos(jogo->listaAsteroids,al_load_bitmap("Sprites/Asteroid/asteroid.png"),dados);
+                }
+                al_unlock_mutex(jogo->listaAsteroids->mutex);
+                break;
+        }
+    
+        
+    }
+}
+
 void *clientSocketHanddle(ALLEGRO_THREAD *thread ,void *param)
     {
     Jogo *jogo = (Jogo*)param;
-
-    int cSocket, porta, nBytes;
-    char *buffer[61];
-    struct sockaddr_in enderecoServidor;
-    socklen_t enderecoSize;
-
+    ALLEGRO_THREAD *recebeThread = al_create_thread(&recebe,jogo);
     cSocket = socket(PF_INET, SOCK_DGRAM, 0);
 
     enderecoServidor.sin_family = AF_INET;
@@ -32,23 +74,33 @@ void *clientSocketHanddle(ALLEGRO_THREAD *thread ,void *param)
     
     char *fmsg;
     sprintf(fmsg,"%d|%d",jogo->largura,jogo->altura);
-    
+
     nBytes = strlen(fmsg) + 1;           
     sendto(cSocket,fmsg,nBytes,0,(struct sockaddr *)&enderecoServidor,enderecoSize);
-    while(jogo->sair)
-        {
-        Coordenada *dados;
-        recvfrom(cSocket,buffer,sizeof(char)*62 ,0,NULL, NULL);
-        printf("%s\n",buffer);
-        dados = charToCoordenada(buffer);       
-        al_lock_mutex(jogo->listaAsteroids->mutex);
-        if(jogo->listaAsteroids->qt < jogo->listaAsteroids->tam)
-            {
-            atualizaDesenhos(jogo->listaAsteroids,al_load_bitmap("Sprites/Asteroid/asteroid.png"),dados);
+    al_start_thread(recebeThread);
+    while(jogo->sair){
+        /*
+        if(jogo->listaTiros->qt > 0){
+            char *tiro[62];
+            for(Node *aux = jogo->listaTiros->inicio ; aux != jogo->listaTiros->fim ; aux = aux->prox){
+                Coordenada *p = aux->valor->posicao;
+                sprintf(tiro,"%f|%f|%f|%f|%d|%d",p->x,p->y,p->dx,p->dy,p->angulo,2);
+                sendto(cSocket,tiro,nBytes,0,(struct sockaddr *)&enderecoServidor,enderecoSize);       
+            }
         }
-        al_unlock_mutex(jogo->listaAsteroids->mutex);
+        */
+        char *nave[62];
+        sprintf(nave,"%f|%f|%f|%f|%d|%d|",jogo->jogador->posicao->x
+                                        ,jogo->jogador->posicao->y
+                                        ,jogo->jogador->posicao->dx
+                                        ,jogo->jogador->posicao->dy
+                                        ,jogo->jogador->posicao->angulo,
+                                        0);
+        nBytes = strlen(nave) + 1;
+        sendto(cSocket,nave,nBytes,0,(struct sockaddr *)&enderecoServidor,enderecoSize);       
+        
     }
-
+    al_destroy_thread(recebeThread);
 return 0;}
 
 
@@ -56,7 +108,7 @@ Coordenada *charToCoordenada(char *msg)
     {
     Coordenada *data = (Coordenada*)malloc(sizeof(Coordenada));
     char aux[11];
-    float pos[5];
+    float pos[6];
     int p = 0;
     int paux = 0;
     for(int i = 0 ; i < strlen(msg); i++)
@@ -86,5 +138,5 @@ Coordenada *charToCoordenada(char *msg)
     data->dx = pos[2];
     data->dy = pos[3];
     data->angulo = pos[4];
-
+    data->tipo = pos[5];
 return data;}

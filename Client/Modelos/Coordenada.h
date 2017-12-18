@@ -4,6 +4,7 @@ typedef struct coordenada{
     double dx;
     double dy;
     int angulo;
+    int tipo;
 }Coordenada;
 
 Coordenada *initCoordenada(double x, double y , double dx , double dy,double angulo){

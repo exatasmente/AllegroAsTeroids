@@ -1,64 +1,77 @@
-typedef struct node
-    {
-    void *valor;
+
+typedef struct node{
     struct node *prox;
     struct node *ant;
+    Coordenada *valor;
 }Node;
-
-typedef struct listaEncadeada
-    {
-    struct node *inicio;
-    struct node *fim;
+typedef struct listaDesenho{
+    Node *inicio;
+    Node *fim;
     int qt;
 }Lista;
 
+Lista *initLista();
+void add(Lista *lista,Node *node);
+Node *remover(Lista *lista);
+void destroyDesenho(Lista *lista);
+Node *novoNode(Coordenada *valor);
 
-void push(Lista *lista,Node *node)
+Node *novoNode(Coordenada *valor)
     {
+    Node *novo;
+    novo = (Node*) malloc(sizeof(Node));
+    novo->ant  = NULL;
+    novo->prox = NULL;
+    novo->valor = valor;
+
+    return novo;
+}
+
+
+Lista *initLista(){
+    Lista *novo;
+
+    novo = (Lista*) malloc(sizeof(Lista));
+
+    novo->inicio = novoNode(NULL);
+    novo->fim = novoNode(NULL);
+    novo->inicio->prox = novo->fim;
+    novo->fim->ant = novo->inicio;
+    novo->qt = 0;
+}
+
+void add(Lista *lista,Node *node){
     if(lista->inicio->prox == lista->fim)
         {
         lista->inicio->prox = node;
         node->ant = lista->inicio;
         node->prox = lista->fim;
         lista->fim->ant = node;
-    }else
-        {
-        lista->inicio->prox->ant = node;
-        node->prox = lista->inicio->prox;
-        node->ant = lista->inicio;
-        lista->inicio->prox = node;
+        }else
+            {
+            lista->inicio->prox->ant = node;
+            node->prox = lista->inicio->prox;
+            node->ant = lista->inicio;
+            lista->inicio->prox = node;
         
-    }
-    lista->qt++;
+        }
+        lista->qt++;
+    
+    
 }
 
-void *pop(Lista *lista)
-    {
+Node *remover(Lista*lista){
     if(lista->qt > 0)
         {
         Node *aux = lista->inicio->prox;
         aux->prox->ant = lista->inicio;
         lista->inicio->prox = aux->prox;
         lista->qt--;
-        return aux->valor;
+        return aux;
     }
+    return NULL;
 }
-
-void remover(Lista *lista, int *f(void*, void*),void *valor)
-    {
-    Node *aux = lista->inicio->prox;
-    while(aux->prox != lista->fim)
-        {
-        if(f(aux->valor,valor))
-            {
-            aux->prox->ant = aux->ant;
-            aux->prox->ant->prox = aux->prox;
-            lista->qt--;
-            free(aux);
-            break;
-        }
-    }
+void destroyDesenho(Lista *lista){
+    free(lista);
+    
 }
-void clear(Lista *lista)
-    {
-    free(lista);}

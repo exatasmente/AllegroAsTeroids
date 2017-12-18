@@ -5,9 +5,10 @@ typedef struct ranking{
     int pontos;
 }Ranking;
 
+
 //variavél utilizada para aramzenar o som da explosão
 ALLEGRO_SAMPLE *explosaoSample;
-
+time_t start;
 //assinatura das funções
 void desenhaNave(Jogo *jogo);
 void desenhaTiros(Jogo *jogo);
@@ -49,6 +50,7 @@ int main(){
         al_start_thread(threadMultiplayer);
     }
     // Loop principal do jogo
+    time(&start);
     while(jogo->sair){
         if(!menu){
             desenhaInterface(jogo);
@@ -110,10 +112,20 @@ void desenhaInterface(Jogo *jogo){
     // desenha no bitmap "buffer" o que está sendo exibido na tela
     al_draw_bitmap(al_get_backbuffer(jogo->janela), 0, 0, 0);     
     */
+    time_t tempo;
+    time(&tempo);
+    char *t[255];
+    time_t diff = difftime(tempo,start);
+    strftime(t, sizeof(t), "%M:%S", &diff);
     
     // desenha os textos indicando os pontos do jogador e as vidas restantes do mesmo           
     al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), 10, 10, ALLEGRO_ALIGN_LEFT,"PONTOS : %d", jogo->jogador->pontos);
     al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), jogo->largura-200, 10, ALLEGRO_ALIGN_LEFT," VIDAS:  %d", jogo->jogador->vidas);
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), 10, jogo->altura-30, ALLEGRO_ALIGN_LEFT,"TEMPO :%s", t);
+    
+    if(diff%15 == 0){
+        al_draw_textf(jogo->fonte, al_map_rgb(255, 0,0 ), (jogo->largura/2)-60, 12, ALLEGRO_ALIGN_LEFT,"SPEED UP");
+    }
     // atualiza o bitmap com os desenho definidos
     
     // define a tela com área de desenho
