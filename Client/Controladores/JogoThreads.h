@@ -56,6 +56,7 @@ void atualizaPosicao(Jogo *jogo,Coordenada *posicao){
             posicao->angulo =  posicao->angulo+4 >= 360 ? 0 : posicao->angulo+4;
             
         }
+        
     
     
     desenha = true;
@@ -389,4 +390,174 @@ void controleAddRankig(Jogo *jogo){
         teclas[i] = 0;
     }
     exibeRanking(jogo);
+}
+
+
+
+void controleNovoJogo(Jogo *jogo){
+    ALLEGRO_BITMAP *buffer = NULL;
+    ALLEGRO_COLOR escolha1 =  al_map_rgb(255, 0, 0);
+    ALLEGRO_COLOR escolha0 =  al_map_rgb(255, 255, 255);
+
+    buffer = al_create_bitmap(jogo->largura,jogo->altura);
+    al_set_target_bitmap(buffer);
+    al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 0, 0), (jogo->largura/2)-80, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"1 JOGADOR");
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80, (jogo->altura/2)+40, ALLEGRO_ALIGN_LEFT,"2-4 JOGADORES");
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80, (jogo->altura/2)+80, ALLEGRO_ALIGN_LEFT,"VOLTAR"); 
+    al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+    al_draw_bitmap(buffer,0,0,0);
+    al_destroy_bitmap(buffer);
+    atualiza();
+
+    while(menu){
+        ALLEGRO_EVENT evento;
+        al_wait_for_event(jogo->filaEventos, &evento);
+        if(evento.type == ALLEGRO_EVENT_KEY_DOWN){
+            buffer = NULL;
+            buffer = al_create_bitmap(jogo->largura,jogo->altura);
+            al_set_target_bitmap(buffer);
+            
+            switch(evento.keyboard.keycode) {
+                case ALLEGRO_KEY_UP:
+                    opcao = (opcao-1)%3;                
+                    break;
+                case ALLEGRO_KEY_DOWN:
+                    opcao = (opcao+1)%3;
+                    break;
+                case ALLEGRO_KEY_SPACE:
+                    menu = false;
+                    break;
+                default:
+                    al_draw_bitmap(al_get_backbuffer(jogo->janela), 0, 0, 0);
+
+            }
+            al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+            al_draw_textf(jogo->fonte, (opcao == 0 ? escolha1 : escolha0 ),(jogo->largura/2)-80, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"1 JOGADOR");
+            al_draw_textf(jogo->fonte, (opcao == 1 ? escolha1 : escolha0 ),(jogo->largura/2)-80, (jogo->altura/2)+40, ALLEGRO_ALIGN_LEFT,"2-4 JOGADORES"); 
+            al_draw_textf(jogo->fonte, (opcao == 2 ? escolha1 : escolha0 ), (jogo->largura/2)-80, (jogo->altura/2)+80, ALLEGRO_ALIGN_LEFT,"VOLTAR"); 
+                    
+
+            al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+            al_draw_bitmap(buffer,0,0,0);
+            al_destroy_bitmap(buffer);
+            atualiza();
+        }else if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
+            jogo->sair = 0;
+            menu = false;
+        }
+     
+    }
+}
+
+void controleMultiplayer(Jogo *jogo){
+    ALLEGRO_BITMAP *buffer = NULL;
+    ALLEGRO_COLOR escolha1 =  al_map_rgb(255, 0, 0);
+    ALLEGRO_COLOR escolha0 =  al_map_rgb(255, 255, 255);
+
+    buffer = al_create_bitmap(jogo->largura,jogo->altura);
+    al_set_target_bitmap(buffer);
+    al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 0, 0), (jogo->largura/2)-80, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"CRIAR PARTIDA");
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80, (jogo->altura/2)+40, ALLEGRO_ALIGN_LEFT,"ENTRAR PARTIDA");
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80, (jogo->altura/2)+80, ALLEGRO_ALIGN_LEFT,"VOLTAR"); 
+    al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+    al_draw_bitmap(buffer,0,0,0);
+    al_destroy_bitmap(buffer);
+    atualiza();
+
+    while(menu){
+        ALLEGRO_EVENT evento;
+        al_wait_for_event(jogo->filaEventos, &evento);
+        if(evento.type == ALLEGRO_EVENT_KEY_DOWN){
+            buffer = NULL;
+            buffer = al_create_bitmap(jogo->largura,jogo->altura);
+            al_set_target_bitmap(buffer);
+            
+            switch(evento.keyboard.keycode) {
+                case ALLEGRO_KEY_UP:
+                    opcao = (opcao-1)%3;                
+                    break;
+                case ALLEGRO_KEY_DOWN:
+                    opcao = (opcao+1)%3;
+                    break;
+                case ALLEGRO_KEY_SPACE:
+                    menu = false;
+                    break;
+                default:
+                    al_draw_bitmap(al_get_backbuffer(jogo->janela), 0, 0, 0);
+
+            }
+            al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+            al_draw_textf(jogo->fonte, (opcao == 0 ? escolha1 : escolha0 ),(jogo->largura/2)-80, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"CRIAR PARTIDA");
+            al_draw_textf(jogo->fonte, (opcao == 1 ? escolha1 : escolha0 ),(jogo->largura/2)-80, (jogo->altura/2)+40, ALLEGRO_ALIGN_LEFT,"ENTRAR PARTIDA"); 
+            al_draw_textf(jogo->fonte, (opcao == 2 ? escolha1 : escolha0 ), (jogo->largura/2)-80, (jogo->altura/2)+80, ALLEGRO_ALIGN_LEFT,"VOLTAR"); 
+                    
+
+            al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+            al_draw_bitmap(buffer,0,0,0);
+            al_destroy_bitmap(buffer);
+            atualiza();
+        }else if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
+            jogo->sair = 0;
+            menu = false;
+        }
+     
+    }
+}
+
+void controleCriarSala(Jogo *jogo){
+    ALLEGRO_BITMAP *buffer = NULL;
+    ALLEGRO_COLOR escolha1 =  al_map_rgb(255, 0, 0);
+    ALLEGRO_COLOR escolha0 =  al_map_rgb(255, 255, 255);
+
+    buffer = al_create_bitmap(jogo->largura,jogo->altura);
+    al_set_target_bitmap(buffer);
+    al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 0, 0), (jogo->largura/2)-80, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"CRIAR PARTIDA");
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80, (jogo->altura/2)+40, ALLEGRO_ALIGN_LEFT,"ENTRAR PARTIDA");
+    al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), (jogo->largura/2)-80, (jogo->altura/2)+80, ALLEGRO_ALIGN_LEFT,"VOLTAR"); 
+    al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+    al_draw_bitmap(buffer,0,0,0);
+    al_destroy_bitmap(buffer);
+    atualiza();
+
+    while(menu){
+        ALLEGRO_EVENT evento;
+        al_wait_for_event(jogo->filaEventos, &evento);
+        if(evento.type == ALLEGRO_EVENT_KEY_DOWN){
+            buffer = NULL;
+            buffer = al_create_bitmap(jogo->largura,jogo->altura);
+            al_set_target_bitmap(buffer);
+            
+            switch(evento.keyboard.keycode) {
+                case ALLEGRO_KEY_UP:
+                    opcao = (opcao-1)%3;                
+                    break;
+                case ALLEGRO_KEY_DOWN:
+                    opcao = (opcao+1)%3;
+                    break;
+                case ALLEGRO_KEY_SPACE:
+                    menu = false;
+                    break;
+                default:
+                    al_draw_bitmap(al_get_backbuffer(jogo->janela), 0, 0, 0);
+
+            }
+            al_draw_bitmap(jogo->fundo, 0, 0, 0);                
+            al_draw_textf(jogo->fonte, (opcao == 0 ? escolha1 : escolha0 ),(jogo->largura/2)-80, (jogo->altura/2), ALLEGRO_ALIGN_LEFT,"CRIAR PARTIDA");
+            al_draw_textf(jogo->fonte, (opcao == 1 ? escolha1 : escolha0 ),(jogo->largura/2)-80, (jogo->altura/2)+40, ALLEGRO_ALIGN_LEFT,"ENTRAR PARTIDA"); 
+            al_draw_textf(jogo->fonte, (opcao == 2 ? escolha1 : escolha0 ), (jogo->largura/2)-80, (jogo->altura/2)+80, ALLEGRO_ALIGN_LEFT,"VOLTAR"); 
+                    
+
+            al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+            al_draw_bitmap(buffer,0,0,0);
+            al_destroy_bitmap(buffer);
+            atualiza();
+        }else if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
+            jogo->sair = 0;
+            menu = false;
+        }
+     
+    }
 }

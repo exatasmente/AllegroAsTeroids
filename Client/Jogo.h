@@ -11,6 +11,7 @@ typedef struct jogo{
     ListaDesenho *listaDesenho;
     ListaDesenho *listaTiros;
     ListaDesenho *listaAsteroids;
+    ListaDesenho *listaUDP;
     Jogador *jogador;
     int largura;
     int altura;
@@ -44,6 +45,7 @@ void initJogo(Jogo *novo){
     novo->listaDesenho = initListaDesenho(10);
     novo->listaTiros = initListaDesenho(10);
     novo->listaAsteroids = initListaDesenho(10);
+    novo->listaUDP = initListaDesenho(10);
     novo->janela = al_create_display(novo->largura,novo->altura);
     novo->filaEventos = al_create_event_queue();
     novo->fonte = al_load_font("Fontes/ARCADE_I.TTF", 20, 0);
@@ -70,6 +72,8 @@ void finaliza(Jogo *jogo){
         destroyDesenho(jogo->listaTiros);
     }if(jogo->listaAsteroids->qt > 0 ){
         destroyDesenho(jogo->listaAsteroids);
+    }if(jogo->listaUDP->qt > 0 ){
+        destroyDesenho(jogo->listaUDP);
     }
 
     al_destroy_font(jogo->fonte);
@@ -85,3 +89,4 @@ void finaliza(Jogo *jogo){
 void atualiza(){
     al_flip_display();
 }
+

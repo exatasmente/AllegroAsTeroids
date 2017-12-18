@@ -33,9 +33,9 @@ void *recebe(ALLEGRO_THREAD *thread ,void *param){
             {
             case 0:
                 al_lock_mutex(jogo->listaTiros->mutex);
-                if(jogo->listaDesenho->qt < jogo->listaDesenho->tam)
+                if(jogo->listaUDP->qt < jogo->listaUDP->tam)
                     {
-                    atualizaDesenhos(jogo->listaTiros,al_load_bitmap("Sprites/Jogador/sprite1.png"),dados);
+                    atualizaDesenhos(jogo->listaUDP,al_load_bitmap("Sprites/Jogador/sprite1.png"),dados);
                 }
                 al_unlock_mutex(jogo->listaTiros->mutex);
             break;
@@ -77,6 +77,8 @@ void *clientSocketHanddle(ALLEGRO_THREAD *thread ,void *param)
 
     nBytes = strlen(fmsg) + 1;           
     sendto(cSocket,fmsg,nBytes,0,(struct sockaddr *)&enderecoServidor,enderecoSize);
+    recvfrom(cSocket,fmsg,sizeof(char)*62 ,0,NULL, NULL);
+    
     al_start_thread(recebeThread);
     while(jogo->sair){
         /*

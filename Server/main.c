@@ -149,11 +149,11 @@ void envia(void *param)
             al_unlock_mutex(mutex);
             char *msg[61];    
             sprintf(msg,"%f|%f|%f|%f|%d|%d|",dados->x,dados->y,dados->dx,dados->dy,dados->angulo,0);
-            sendto( udpSocket, msg, strlen(msg)+1,0,(struct sockaddr *)&partida->pessoas[0], partida->tamSock[0]);
+            sendto( udpSocket, msg, strlen(msg)+1,0,(struct sockaddr *)&partida->pessoas[1], partida->tamSock[1]);
             free(dados);
         }
         
-        sleep(1);
+        
         free(data);        
     }
 
@@ -187,13 +187,16 @@ int main(void){
   /*Initialize size variable to be used later on*/
   partida->tamSock[0] = sizeof partida->pessoas[0] ;
   partida->tamSock[1] = sizeof partida->pessoas[1] ;
-  conecta(partida,0);
-  //conecta(partida,1);
   player1 = al_create_thread(&recebe,partida);
-  //player2 = al_create_thread(&recebe,partida);
+  player2 = al_create_thread(&recebe,partida);
 
+  conecta(partida,0);
   al_start_thread(player1);
-  //al_start_thread(player2);
+  conecta(partida,1);
+
+
+  
+  al_start_thread(player2);
   envia(partida);
   return 0;
 }

@@ -18,9 +18,11 @@ void exibeRanking(Jogo *jogo);
 
 int main(){
     // Instância as variavéis de prioridade 1
+    
     Jogo *jogo;
     Jogador *jogador;
     // Inicializa a variavél jogo 
+    reinicia:
     jogo = novoJogo(800,600);
     initJogo(jogo);
     // define a dificuldade inicial
@@ -47,7 +49,7 @@ int main(){
     mostraMenu(jogo);
     if(jogo->sair){
         al_start_thread(threadTeclado);
-        al_start_thread(threadMultiplayer);
+       al_start_thread(threadMultiplayer);
     }
     // Loop principal do jogo
     time(&start);
@@ -55,6 +57,7 @@ int main(){
         if(!menu){
             desenhaInterface(jogo);
             desenhaNave(jogo);
+            desenhaUDP(jogo);
             desenhaTiros(jogo);
             desenhaAsteroides(jogo);
             if(jogo->jogador->vidas == 0){
@@ -65,6 +68,8 @@ int main(){
 		        velocidadeAsteroid = 4;
 		        mostraMenu(jogo);
 		        menu = false;
+                
+                break;
             }   
             
         }
@@ -74,7 +79,10 @@ int main(){
     al_destroy_thread(threadTeclado);
     al_destroy_thread(threadMultiplayer);
     // chamada pro procedimento para finalizar o jogo
+    
     finaliza(jogo);
+    if(jogo->sair)
+        goto reinicia;
     return 0;
 }
 void mostraMenu(Jogo *jogo){
@@ -82,7 +90,31 @@ void mostraMenu(Jogo *jogo){
         controleMenu(jogo);
         switch(opcao){
             case 0:
-                menu = false;
+                menu = 1;
+                controleNovoJogo(jogo);
+                switch(opcao){
+                    case 0:
+                        menu = 0;
+                    break;
+
+                    case 1:
+                        menu = 1;
+                        controleMultiplayer(jogo);
+                        switch(opcao){
+                            case 0:
+                            break;
+
+                            case 1:
+                            break;
+
+                            case 2:
+                            break;
+                        }
+                    break;
+
+                    case 2:
+                    break;
+                }
                 break;
             case 1:
                 exibeRanking(jogo);
@@ -139,6 +171,84 @@ void desenhaInterface(Jogo *jogo){
     */
     atualiza();
 }
+void desenhaUDP(Jogo *jogo){
+    //verifica se exixtem desenhos à serem renderizados 
+    if(jogo->listaUDP->qt > 0){        
+        // define a variavél de sinal para colisão da nave com os asteroids com falso
+        int colisao = 0;
+        //Instância uma variavél do tipo ALLEGRO_BITMAP
+        ALLEGRO_BITMAP *buffer = NULL;
+        //inicializa a variavél "buffer"
+        buffer = al_create_bitmap(jogo->largura,jogo->altura);
+        // define o bitmap "buffer" como alvo para renderizar 
+        al_set_target_bitmap(buffer);
+        // desenha na no bitmap "buffer" a imagem de fundo do jogo
+        al_draw_bitmap(al_get_backbuffer(jogo->janela),0,0,0); 
+
+        //Instância duas variavéis de auxilo para desenho ta tela
+        Desenho *asteroide;
+        Desenho *desenho;
+        // bloqueia a regiao de memória da lista de desenhos relacionado à nave do jogador
+        al_lock_mutex(jogo->listaUDP->mutex);            
+        // retira um desenho da lista de desenhos 
+        desenho = removerDesenho(jogo->listaUDP);
+        // bloqueia a regiao de memória da lista de desenhos relacionado aos asteroids 
+        al_lock_mutex(jogo->listaAsteroids->mutex);
+        // laco de repetição para verificar se hà colisão com os asteroids exibidos na tela 
+        for(Node *aux = jogo->listaAsteroids->inicio->prox ; aux != jogo->listaAsteroids->fim ;aux = aux->prox){
+            //Detecta Colisão
+            asteroide = aux->valor;
+            //Colisão usando o método de distância
+            float distancia = sqrt(pow(desenho->posicao->dx-asteroide->posicao->dx,2)+ pow(desenho->posicao->dy-asteroide->posicao->dy,2));
+            if(distancia < desenho->posicao->x+desenho->posicao->y ){
+                colisao = 1; 
+                break;
+            }
+            
+        }
+        // asteroid tem q ser removido
+        if(colisao){
+            asteroide->id = -1;
+        }
+        // desbloqueia dos endereços de memória bloqueados anteriormente
+        al_unlock_mutex(jogo->listaAsteroids->mutex);
+        al_unlock_mutex(jogo->listaUDP->mutex);            
+        // Caso não haja colisão a nave será renderizada no bitmap definido anteriormente "buffer"
+        if(!colisao){
+            //Verifica se a posição atual do jogador está dentro da tela
+            if(verificaPosicao(jogo,desenho->posicao)){
+                //desenha no bitmap "buffer" o sprite da nave na coordenada passada como parânmetro
+                
+                al_draw_rotated_bitmap(desenho->imagem,
+                                       desenho->posicao->x,
+                                       desenho->posicao->y,
+                                       desenho->posicao->dx,
+                                       desenho->posicao->dy,
+                                       desenho->posicao->angulo*ALLEGRO_PI/180,
+                                       desenho->flags);
+             //   al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), desenho->posicao->dx, desenho->posicao->dy, ALLEGRO_ALIGN_LEFT,"%.2f %.2f",desenho->posicao->dx,desenho->posicao->dy);
+                // troca o bitmap padrão para o bitimap da tela
+                al_set_target_bitmap(al_get_backbuffer(jogo->janela));
+                // desenha o bitmap "buffer" na tela
+                al_draw_bitmap(buffer,0,0,0);
+                // libera o endereço de memória utilizado pela variavél "buffer"
+               // al_destroy_bitmap(buffer);
+                
+            }
+        }else{
+            // caso haja colisão a vida do jogador é decrementada
+            jogo->jogador->vidas -= 1;
+
+        }
+        
+        asteroide = NULL;
+        desenho = NULL;
+        
+    }            
+
+}
+
+
 void desenhaNave(Jogo *jogo){
     //verifica se exixtem desenhos à serem renderizados 
     if(jogo->listaDesenho->qt > 0){        
@@ -186,15 +296,15 @@ void desenhaNave(Jogo *jogo){
             //Verifica se a posição atual do jogador está dentro da tela
             if(verificaPosicao(jogo,desenho->posicao)){
                 //desenha no bitmap "buffer" o sprite da nave na coordenada passada como parânmetro
-                
-                al_draw_rotated_bitmap(desenho->imagem,
+       
+                    al_draw_rotated_bitmap(desenho->imagem,
                                        desenho->posicao->x,
                                        desenho->posicao->y,
                                        desenho->posicao->dx,
                                        desenho->posicao->dy,
                                        desenho->posicao->angulo*ALLEGRO_PI/180,
                                        desenho->flags);
-             //   al_draw_textf(jogo->fonte, al_map_rgb(255, 255, 255), desenho->posicao->dx, desenho->posicao->dy, ALLEGRO_ALIGN_LEFT,"%.2f %.2f",desenho->posicao->dx,desenho->posicao->dy);
+       
                 // troca o bitmap padrão para o bitimap da tela
                 al_set_target_bitmap(al_get_backbuffer(jogo->janela));
                 // desenha o bitmap "buffer" na tela
@@ -247,8 +357,6 @@ void desenhaTiros(Jogo *jogo){
                     al_lock_mutex(jogo->listaAsteroids->mutex);
                     // laco de repetição para para verificar se os asteroids foram atingidos pelo tiro atual
                     for(Node *aux2  = jogo->listaAsteroids->inicio->prox; aux2 != jogo->listaAsteroids->fim ; aux2 = aux2->prox){
-                        if(aux2->valor == NULL)
-                            puts("AKI2");
                         asteroide = aux2->valor;
                         // caso o id dos asteroid seja diferente dos valores -1 e -2 
                         if(asteroide->id >= 0){
